@@ -1,0 +1,18 @@
+{
+  "name": "contracts",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "Chance <jchancehud@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "scripts": {
+    "build": "hardhat compile"
+  },
+  "dependencies": {
+    "@unirep/contracts": "^1.0.1"
+  },
+  "devDependencies": {
+    "@openzeppelin/contracts": "^4.7.3",
+    "hardhat": "^2.12.0"
+  }
+}

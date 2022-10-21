@@ -1,0 +1,11 @@
+{
+  "name": "frontend",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "Chance <jchancehud@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "dependencies": {
+    "@unirep/core": "^1.0.1"
+  }
+}

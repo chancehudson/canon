@@ -1,0 +1,14 @@
+{
+  "name": "relay",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "Chance <jchancehud@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "src/index.mjs",
+  "dependencies": {
+    "@unirep/core": "^1.0.1",
+    "ethers": "^5.7.2",
+    "express": "^4.18.2"
+  }
+}
