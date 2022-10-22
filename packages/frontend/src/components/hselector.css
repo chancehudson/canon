@@ -1,0 +1,15 @@
+.selector-outer {
+  display: flex;
+}
+
+.vertical-button {
+  background: red;
+  width: 20px;
+  height: 100%;
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.selector-item {
+  flex: 1;
+}
