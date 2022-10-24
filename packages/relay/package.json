@@ -6,8 +6,14 @@
   "homepage": "",
   "license": "MIT",
   "main": "src/index.mjs",
+  "scripts": {
+    "start": "node ./src/index.mjs",
+    "keys": "sh scripts/loadKeys.sh"
+  },
   "dependencies": {
+    "@canon/contracts": "0.0.0",
     "@unirep/core": "^1.0.1",
+    "anondb": "^0.0.13",
     "ethers": "^5.7.2",
     "express": "^4.18.2"
   }

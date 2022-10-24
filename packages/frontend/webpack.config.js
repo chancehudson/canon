@@ -19,14 +19,15 @@ module.exports = (env) => ({
     resolve: {
         extensions: ['*', '.js', '.jsx', '.json', '.scss'],
         fallback: {
-          /*
-            crypto: require.resolve('crypto-browserify'),
-            assert: require.resolve('assert/'),
-            stream: require.resolve('stream-browserify'),
-            os: require.resolve('os-browserify/browser'),
-            events: require.resolve('events/'),
-            fs: false,
-            */
+        path: require.resolve('path-browserify'),
+        crypto: require.resolve('crypto-browserify'),
+        assert: require.resolve('assert/'),
+        stream: require.resolve('stream-browserify'),
+        os: require.resolve('os-browserify/browser'),
+        events: require.resolve('events/'),
+        fs: false,
+        readline: false,
+        constants: false
         },
     },
     module: {
@@ -88,6 +89,10 @@ module.exports = (env) => ({
         }),
         new webpack.ProvidePlugin({
             Buffer: path.resolve(__dirname, 'externals', 'buffer.js'),
+        }),
+        new webpack.ContextReplacementPlugin(/\/maci\-crypto\//, (data) => {
+            delete data.dependencies[0].critical
+            return data
         }),
     ],
 })

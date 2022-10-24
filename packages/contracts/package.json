@@ -1,5 +1,5 @@
 {
-  "name": "contracts",
+  "name": "@canon/contracts",
   "version": "0.0.0",
   "description": "> TODO: description",
   "author": "Chance <jchancehud@gmail.com>",
@@ -7,12 +7,14 @@
   "license": "MIT",
   "scripts": {
     "build": "hardhat compile && yarn abi",
-    "abi": "node scripts/abi"
+    "abi": "node scripts/abi",
+    "deploy": "hardhat run scripts/deploy.mjs"
   },
   "dependencies": {
     "@unirep/contracts": "^1.0.1"
   },
   "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.0",
     "@openzeppelin/contracts": "^4.7.3",
     "hardhat": "^2.12.0"
   }

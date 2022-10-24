@@ -15,4 +15,19 @@ export default ({ app, db, synchronizer }) => {
     })
   }
 
+  async function relay(req, res) {
+    const { data, to } = req.body
+    // we queue it and give a transaction hash
+    if (typeof data !== 'string') {
+      res.status(400).json({ error: 'transaction data must be a string' })
+      return
+    }
+    try {
+      const hash = await TransactionManager.queueTransaction(to, data)
+      res.json({ hash })
+    } catch (err) {
+      res.status(400).json({ error: 'transaction estimation failed' })
+    }
+  }
+
 }

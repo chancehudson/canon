@@ -2,10 +2,8 @@ import { ethers } from 'ethers'
 import { DB } from 'anondb'
 
 export class TransactionManager {
-    wallet?: ethers.Wallet
-    _db?: DB
 
-    configure(key: string, provider: any, db: DB) {
+    configure(key, provider, db) {
         this.wallet = new ethers.Wallet(key, provider)
         this._db = db
     }
@@ -53,13 +51,13 @@ export class TransactionManager {
         }
     }
 
-    async tryBroadcastTransaction(signedData: string) {
+    async tryBroadcastTransaction(signedData) {
         if (!this.wallet) throw new Error('Not initialized')
         try {
             console.log(`Sending tx ${ethers.utils.keccak256(signedData)}`)
             await this.wallet.provider.sendTransaction(signedData)
             return true
-        } catch (err: any) {
+        } catch (err) {
             if (
                 err
                     .toString()
@@ -83,7 +81,7 @@ export class TransactionManager {
         }
     }
 
-    async getNonce(address: string) {
+    async getNonce(address) {
         const latest = await this._db?.findOne('AccountNonce', {
             where: {
                 address,
@@ -105,12 +103,12 @@ export class TransactionManager {
         return latest.nonce
     }
 
-    async wait(hash: string) {
+    async wait(hash) {
         return this.wallet?.provider.waitForTransaction(hash)
     }
 
-    async queueTransaction(to: string, data: string | any = {}) {
-        const args = {} as any
+    async queueTransaction(to, data = {}) {
+        const args = {}
         if (typeof data === 'string') {
             // assume it's input data
             args.data = data
@@ -136,6 +134,7 @@ export class TransactionManager {
             to,
             // gasPrice: 2 * 10 ** 9, // 2 gwei
             gasPrice: 10000,
+            gasPrice: 33887934,
             ...args,
         })
         await this._db?.create('AccountTransaction', {
