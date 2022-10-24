@@ -17,6 +17,13 @@ contract Canon {
   Unirep unirep;
   address admin;
 
+  event SectionSubmitted(
+    uint indexed epochKey,
+    uint indexed epoch,
+    uint indexed contentHash,
+    uint graffitiHash
+  );
+
   // epoch => epoch key => section
   mapping (uint => mapping(uint => Section)) sectionByEpochKey;
 
@@ -59,6 +66,12 @@ contract Canon {
     sectionByEpochKey[epoch][epochKey].contentHash = contentHash;
     sectionByEpochKey[epoch][epochKey].epoch = epoch;
     sectionByEpochKey[epoch][epochKey].voteCount = 0;
+    emit SectionSubmitted(
+      epochKey,
+      epoch,
+      contentHash,
+      graffitiHash
+    );
   }
 
   /**

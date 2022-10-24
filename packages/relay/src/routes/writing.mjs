@@ -49,6 +49,8 @@ export default ({ app, db, synchronizer }) => {
       hash: BigInt(hash).toString(),
       author: BigInt(epochKey).toString(),
       confirmed: 0,
+      contentHash,
+      graffitiHash,
     })
     res.json({ hash: txHash })
   }
@@ -59,12 +61,14 @@ export default ({ app, db, synchronizer }) => {
       where: {
         epoch: {
           lt: epoch.number
-        }
+        },
+        status: 1,
       }
     })
     const sections = await db.findMany('Section', {
       where: {
         epoch: epoch.number,
+        status: 1,
       }
     })
     res.json({

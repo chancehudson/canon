@@ -7,6 +7,8 @@ const _schema = [
       ['epoch', 'Int'],
       ['content', 'String'],
       ['graffiti', 'String'],
+      ['contentHash', 'String'],
+      ['graffitiHash', 'String'],
       ['hash', 'String'],
       ['author', 'String'],
       ['confirmed', 'Int']
