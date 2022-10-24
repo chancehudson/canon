@@ -1,6 +1,6 @@
 import { SignupProof } from '@unirep/contracts'
 import { ethers } from 'ethers'
-import { CANON_ADDRESS, provider } from '../config.mjs'
+import { CANON_ADDRESS } from '../config.mjs'
 import TransactionManager from '../singletons/TransactionManager.mjs'
 import CanonABI from '@canon/contracts/abi/Canon.json' assert { type: 'json' }
 
@@ -18,7 +18,7 @@ export default ({ app, db, synchronizer }) => {
       return
     }
     // make a transaction lil bish
-    const canonContract = new ethers.Contract(CANON_ADDRESS, CanonABI, provider)
+    const canonContract = new ethers.Contract(CANON_ADDRESS, CanonABI)
     // const contract =
     const calldata = canonContract.interface.encodeFunctionData(
       'signup',
@@ -28,7 +28,6 @@ export default ({ app, db, synchronizer }) => {
       CANON_ADDRESS,
       calldata,
     )
-    res.json({hash})
+    res.json({ hash })
   }
-
 }

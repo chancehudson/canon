@@ -17,7 +17,7 @@ export default () => {
     <div className="container">
       <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between' }}>
         <div style={{fontWeight: "bold"}}>crowd canon</div>
-        {userContext.hasSignedUp ?
+        {!userContext.hasSignedUp ?
           (<Button onClick={() => userContext.signup()}>Join</Button>) : null}
       </div>
       <div className="container">
@@ -40,7 +40,10 @@ export default () => {
       {
         isWriting && (
           <>
-            <Button style={{alignSelf: 'flex-start'}} onClick={() => setIsWriting(false)}>Cancel</Button>
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between' }}>
+              <Button onClick={() => setIsWriting(false)}>Cancel</Button>
+              <Button onClick={() => userContext.submitSection(writing)}>Submit</Button>
+            </div>
             <textarea onChange={(e) => setWriting(e.target.value)} value={writing} />
           </>
         )

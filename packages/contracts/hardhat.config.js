@@ -14,8 +14,8 @@ module.exports = {
       ]
     },
     arb: {
-      // url: 'http://localhost:8547',
-      url: 'https://arb-goerli.g.alchemy.com/v2/hfFfXlX8rR8YvrALiJ8b7ZtIPRGY1GTM',
+      url: 'http://localhost:8547',
+      // url: 'https://arb-goerli.g.alchemy.com/v2/hfFfXlX8rR8YvrALiJ8b7ZtIPRGY1GTM',
       accounts: [
         '0x0f70e777f814334daa4456ac32b9a1fdca75ae07f70c2e6cef92679bad06c88b'
       ]

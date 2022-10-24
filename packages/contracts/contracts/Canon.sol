@@ -40,8 +40,8 @@ contract Canon {
    * key proof signing the hash of the section and any other data.
    **/
   function submitSection(
-    uint graffitiHash,
     uint contentHash,
+    uint graffitiHash,
     uint[] memory publicSignals,
     uint[8] memory proof
   ) public {
@@ -50,9 +50,10 @@ contract Canon {
     uint epoch = publicSignals[2];
     uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals[3]));
     require(epoch == currentEpoch);
-    bytes32 data = keccak256(abi.encodePacked(epochKey, graffitiHash, contentHash, epoch));
-    require(uint(data) == publicSignals[4], 'badsig');
-    sectionByEpochKey[epoch][epochKey].id = uint(data);
+    bytes32 data = keccak256(abi.encode(contentHash, graffitiHash, epochKey, epoch));
+    uint moddedHash = uint(data) % 2**200;
+    require(moddedHash == publicSignals[4], 'badsig');
+    sectionByEpochKey[epoch][epochKey].id = moddedHash;
     sectionByEpochKey[epoch][epochKey].author = epochKey;
     sectionByEpochKey[epoch][epochKey].graffitiHash = graffitiHash;
     sectionByEpochKey[epoch][epochKey].contentHash = contentHash;

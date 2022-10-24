@@ -4,11 +4,12 @@ const _schema = [
   {
     name: 'Section',
     rows: [
-      ['epoch', 'Int', { optional: true }],
+      ['epoch', 'Int'],
       ['content', 'String'],
       ['graffiti', 'String'],
       ['hash', 'String'],
       ['author', 'String'],
+      ['confirmed', 'Int']
     ],
   },
   {
