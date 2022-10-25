@@ -48,7 +48,7 @@ class Canon {
   async ingestSections(sections) {
     for (const section of sections) {
       const { id } = section
-      this.sectionsById = { [id]: section, ...this.sectionsById }
+      this.sectionsById = { ...this.sectionsById, [id]: section }
     }
   }
 
