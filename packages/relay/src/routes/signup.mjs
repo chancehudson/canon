@@ -14,33 +14,35 @@ import CanonABI from '@canon/contracts/abi/Canon.json' assert { type: 'json' }
 export default ({ app, db, synchronizer }) => {
   app.post('/api/signup', async (req, res) => {
 
-    const { publicSignals, proof } = req.body
-    const signupProof = new SignupProof(publicSignals, proof, synchronizer.prover)
-    const valid = await signupProof.verify()
-    if (!valid) {
-      res.status(400).json({ error: 'Invalid proof' })
-      return
+    try {
+      const { publicSignals, proof } = req.body
+      const signupProof = new SignupProof(publicSignals, proof, synchronizer.prover)
+      const valid = await signupProof.verify()
+      if (!valid) {
+        res.status(400).json({ error: 'Invalid proof' })
+        return
+      }
+      const currentEpoch = synchronizer.calcCurrentEpoch()
+      if (currentEpoch !== Number(BigInt(signupProof.epoch))) {
+        res.status(400).json({ error: 'Wrong epoch' })
+        return
+      }
+      // make a transaction lil bish
+      const canonContract = new ethers.Contract(CANON_ADDRESS, CanonABI)
+      // const contract =
+      const calldata = canonContract.interface.encodeFunctionData(
+        'signup',
+        [signupProof.publicSignals, signupProof.proof]
+      )
+      const hash = await TransactionManager.queueTransaction(
+        CANON_ADDRESS,
+        calldata,
+      )
+      res.json({ hash })
+
+    } catch (error) {
+      res.status(500).json({ error })
     }
-    const currentEpoch = synchronizer.calcCurrentEpoch()
-    if (currentEpoch !== Number(BigInt(signupProof.epoch))) {
-      res.status(400).json({ error: 'Wrong epoch' })
-      return
-    }
-    // make a transaction lil bish
-    const canonContract = new ethers.Contract(CANON_ADDRESS, CanonABI)
-    // const contract =
-    const calldata = canonContract.interface.encodeFunctionData(
-      'signup',
-      [signupProof.publicSignals, signupProof.proof]
-    )
-    const hash = await TransactionManager.queueTransaction(
-      CANON_ADDRESS,
-      {
-        data: calldata,
-        gasLimit: 2000000,
-      },
-    )
-    res.json({ hash })
 
   })
 }
