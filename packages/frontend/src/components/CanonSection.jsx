@@ -12,15 +12,15 @@ export default observer(({ id }) => {
     return (<div>unable to find section</div>)
   }
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <div>Author: {section.author}</div>
-      <div style={{ display: 'flex', flex: 1, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
-        <div>Votes: {section.voteCount}{section.winner ? ' (Current leader)' : null}</div>
-        <Button onClick={() => userContext.voteSection(section.id)}>Vote</Button>
+    <div style={{ marginTop: '2px', display: 'flex', flexDirection: 'row', border: '1px solid black' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', width: '180px' }}>
+        <div>Author: {`0x${BigInt(section.author).toString(16)}`}</div>
+        <div>Votes: {section.voteCount}</div>
+        <div>Graffiti: {section.graffiti}</div>
       </div>
-      <div>
+      <div style={{ height: '100%', width: '1px', background: 'black'}} />
+      <div style={{ marginLeft: '10px' }}>
         <div>{section.content}</div>
-        <div>{section.graffiti}</div>
       </div>
     </div>
   )

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import { Unirep } from '@unirep/contracts/Unirep.sol';
@@ -24,16 +25,29 @@ contract Canon {
     uint graffitiHash
   );
 
+  event SectionVote(
+    uint indexed epochKey,
+    uint indexed sectionId,
+    uint indexed voteCount
+  );
+
+  event CanonFire(
+    uint indexed epoch,
+    uint indexed sectionId,
+    uint indexed voteCount
+  );
+
   // epoch => epoch key => section
   mapping (uint => mapping(uint => Section)) sectionByEpochKey;
-
-  // the canonical section for an epoch
-  // epoch => section
-  mapping (uint => uint) sectionByEpoch;
+  // epoch => id => voteCount
+  mapping (uint => mapping(uint => uint)) votesById;
+  // epoch => id, votes
+  mapping (uint => uint[2]) canon;
 
   constructor(Unirep _unirep) {
     unirep = _unirep;
-    unirep.attesterSignUp(60 * 60 * 24 * 7);
+    // unirep.attesterSignUp(60 * 60 * 24 * 7);
+    unirep.attesterSignUp(60 * 3);
     admin = msg.sender;
   }
 
@@ -60,6 +74,7 @@ contract Canon {
     bytes32 data = keccak256(abi.encode(contentHash, graffitiHash, epochKey, epoch));
     uint moddedHash = uint(data) % 2**200;
     require(moddedHash == publicSignals[4], 'badsig');
+    require(sectionByEpochKey[epoch][epochKey].id == 0, 'double');
     sectionByEpochKey[epoch][epochKey].id = moddedHash;
     sectionByEpochKey[epoch][epochKey].author = epochKey;
     sectionByEpochKey[epoch][epochKey].graffitiHash = graffitiHash;
@@ -82,6 +97,27 @@ contract Canon {
     uint[] memory publicSignals,
     uint[8] memory proof
   ) public {
-
+    require(unirep.verifyEpochKeyProof(publicSignals, proof), 'badproof');
+    uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals[3]));
+    uint epoch = publicSignals[2];
+    require(epoch == currentEpoch, 'epoch');
+    uint id = publicSignals[4];
+    uint epochKey = publicSignals[0];
+    uint voteCount = votesById[epoch][id] + 1;
+    votesById[epoch][id] = voteCount;
+    if (votesById[epoch][id] > canon[epoch][1]) {
+      // update the current canonical entry
+      canon[epoch][0] = id;
+      emit CanonFire(
+        epoch,
+        id,
+        voteCount
+      );
+    }
+    emit SectionVote(
+      epochKey,
+      id,
+      voteCount
+    );
   }
 }

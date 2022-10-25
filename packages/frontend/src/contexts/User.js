@@ -7,6 +7,9 @@ import { ethers } from 'ethers'
 import { provider, UNIREP_ADDRESS, CANON_ADDRESS, SERVER } from '../config'
 import prover from './prover'
 
+// TODO: don't do this
+import { canon } from './canon'
+
 class User {
 
   hasSignedUp = false
@@ -35,6 +38,19 @@ class User {
     await userState.waitForSync()
     this.hasSignedUp = await userState.hasSignedUp()
     this.userState = userState
+    this.watchTransition()
+  }
+
+  async watchTransition() {
+    for (;;) {
+      const epoch = await this.userState.latestTransitionedEpoch()
+      const hasSignedUp = await this.userState.hasSignedUp()
+      if (hasSignedUp && epoch != this.userState.calcCurrentEpoch()) {
+        await this.stateTransition()
+      }
+      const time = this.userState.calcEpochRemainingTime()
+      await new Promise(r => setTimeout(r, time * 1000))
+    }
   }
 
   async signup(message) {
@@ -57,7 +73,7 @@ class User {
   async submitSection(content, graffiti = '') {
     const contentHash = ethers.utils.solidityKeccak256(['string'], [content])
     const graffitiHash = ethers.utils.solidityKeccak256(['string'], [graffiti])
-    const epoch = await this.userState.getUnirepStateCurrentEpoch()
+    const epoch = this.userState.calcCurrentEpoch()
     const epochKeys = await this.userState.getEpochKeys(epoch)
     const epochKey = epochKeys[0]
     const hash = ethers.utils.solidityKeccak256(['uint', 'uint', 'uint', 'uint'], [contentHash, graffitiHash, epochKey, epoch])
@@ -82,16 +98,46 @@ class User {
     }).then(r => r.json())
     await provider.waitForTransaction(data.hash)
     await this.userState.waitForSync()
+    await canon.loadSections()
   }
 
-  async loadSections() {
-    const data = await fetch(`${SERVER}/api/section`, {
-      method: 'GET',
+  async voteSection(id) {
+    const epoch = this.userState.calcCurrentEpoch()
+    const epochKeyProof = await this.userState.genEpochKeyProof({
+      data: id.toString(),
+      epoch,
+      nonce: 0,
+    })
+    const data = await fetch(`${SERVER}/api/vote`, {
+      method: 'POST',
       headers: {
         'content-type': 'application/json'
       },
+      body: JSON.stringify({
+        publicSignals: epochKeyProof.publicSignals,
+        proof: epochKeyProof.proof,
+      })
     }).then(r => r.json())
-    console.log(data)
+    await provider.waitForTransaction(data.hash)
+    await this.userState.waitForSync()
+    await canon.loadSections()
+  }
+
+  async stateTransition() {
+    const signupProof = await this.userState.genUserStateTransitionProof()
+    const data = await fetch(`${SERVER}/api/transition`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        publicSignals: signupProof.publicSignals,
+        proof: signupProof.proof,
+      })
+    }).then(r => r.json())
+    await provider.waitForTransaction(data.hash)
+    await this.userState.waitForSync()
+    await canon.loadCanon()
   }
 }
 

@@ -9,3 +9,4 @@ build/
 cache
 artifacts
 keys/
+*.sqlite

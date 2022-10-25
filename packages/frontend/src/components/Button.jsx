@@ -9,11 +9,7 @@ export default ({ style, children, loadingText, onClick }) => {
     if (typeof onClick !== 'function') return
     try {
       setLoading(true)
-      const res = onClick()
-      if (typeof res === 'object' && typeof res.then === 'function') {
-
-
-      }
+      await onClick()
     } catch (err) {
       setError(err.toString())
       setTimeout(() => setError(''), 2000)

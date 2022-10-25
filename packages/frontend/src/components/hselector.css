@@ -8,8 +8,10 @@
   height: 100%;
   min-height: 40px;
   cursor: pointer;
+  word-break: break-all;
 }
 
 .selector-item {
   flex: 1;
+  border: 1px solid black;
 }
