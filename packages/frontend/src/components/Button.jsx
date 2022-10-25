@@ -11,6 +11,7 @@ export default ({ style, children, loadingText, onClick }) => {
       setLoading(true)
       await onClick()
     } catch (err) {
+      console.log(err)
       setError(err.toString())
       setTimeout(() => setError(''), 2000)
     } finally {

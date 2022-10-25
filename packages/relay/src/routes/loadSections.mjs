@@ -11,6 +11,9 @@ export default ({ app, db, synchronizer }) => {
       where: {
         epoch,
         confirmed: 1,
+      },
+      sortBy: {
+        voteCount: 'desc',
       }
     })
     if (currentCanon) {
