@@ -109,6 +109,7 @@ contract Canon {
     if (votesById[epoch][id] > canon[epoch][1]) {
       // update the current canonical entry
       canon[epoch][0] = id;
+      canon[epoch][1] = voteCount;
       emit CanonFire(
         epoch,
         id,
