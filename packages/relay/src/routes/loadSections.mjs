@@ -12,7 +12,7 @@ export default ({ app, db, synchronizer }) => {
         epoch,
         confirmed: 1,
       },
-      sortBy: {
+      orderBy: {
         voteCount: 'desc',
       }
     })
