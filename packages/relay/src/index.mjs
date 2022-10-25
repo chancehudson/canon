@@ -1,10 +1,9 @@
 import url from 'url'
 import path from 'path'
+import fs from 'fs'
 import express from 'express'
 import { provider, PRIVATE_KEY } from './config.mjs'
 import TransactionManager from './singletons/TransactionManager.mjs'
-import WritingRoutes from './routes/writing.mjs'
-import SignupRoutes from './routes/signup.mjs'
 import synchronizer from './singletons/CanonSynchronizer.mjs'
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
@@ -25,5 +24,11 @@ app.use('*', (req, res, next) => {
 app.use(express.json())
 app.use('/build', express.static(path.join(__dirname, '../keys')))
 
-WritingRoutes({ app, db: synchronizer._db, synchronizer })
-SignupRoutes({ app, db: synchronizer._db, synchronizer })
+
+// import all non-index files from this folder
+const routeDir = path.join(__dirname, 'routes')
+const routes = await fs.promises.readdir(routeDir)
+for (const routeFile of routes) {
+  const { default: route } = await import(path.join(routeDir, routeFile))
+  route({ app, db: synchronizer._db, synchronizer})
+}

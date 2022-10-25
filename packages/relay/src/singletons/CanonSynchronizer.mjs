@@ -1,6 +1,6 @@
 import { Synchronizer } from '@unirep/core'
 import { ethers } from 'ethers'
-import { provider, UNIREP_ADDRESS, CANON_ADDRESS, PRIVATE_KEY } from '../config.mjs'
+import { provider, UNIREP_ADDRESS, CANON_ADDRESS, PRIVATE_KEY, DB_PATH } from '../config.mjs'
 import { SQLiteConnector } from 'anondb/node.js'
 import { defaultProver } from '@unirep/circuits/provers/defaultProver.js'
 import schema from './schema.mjs'
@@ -21,11 +21,15 @@ class CanonSynchronizer extends Synchronizer {
 
   get canonFilter() {
     const [SectionSubmitted] = canonContract.filters.SectionSubmitted().topics
+    const [SectionVote] = canonContract.filters.SectionVote().topics
+    const [CanonFire] = canonContract.filters.CanonFire().topics
     return {
         address: CANON_ADDRESS,
         topics: [
           [
-            SectionSubmitted
+            SectionSubmitted,
+            SectionVote,
+            CanonFire
           ],
         ],
     }
@@ -33,11 +37,19 @@ class CanonSynchronizer extends Synchronizer {
 
   get topicHandlers() {
     const [SectionSubmitted] = canonContract.filters.SectionSubmitted().topics
+    const [SectionVote] = canonContract.filters.SectionVote().topics
+    const [CanonFire] = canonContract.filters.CanonFire().topics
     return {
       [SectionSubmitted]: this.sectionSubmitted.bind(this),
+      [SectionVote]: this.sectionVote.bind(this),
+      [CanonFire]: this.canonFire.bind(this),
       ...super.topicHandlers,
     }
   }
+
+/**
+ * event handlers
+ **/
 
   async sectionSubmitted(event, db) {
     const epochKey = BigInt(event.topics[1]).toString()
@@ -60,9 +72,43 @@ class CanonSynchronizer extends Synchronizer {
       }
     })
   }
+
+  async sectionVote(event, db) {
+    const epochKey = BigInt(event.topics[1]).toString()
+    const sectionId = BigInt(event.topics[2]).toString()
+    const voteCount = Number(BigInt(event.topics[3]))
+    db.update('Section', {
+      where: {
+        id: sectionId,
+      },
+      update: {
+        voteCount,
+      }
+    })
+  }
+
+  async canonFire(event, db) {
+    const epoch = Number(BigInt(event.topics[1]))
+    const sectionId = BigInt(event.topics[2]).toString()
+    const voteCount = Number(BigInt(event.topics[3]))
+    db.upsert('Canon', {
+      where: {
+        epoch,
+      },
+      update: {
+        sectionId,
+        voteCount
+      },
+      create: {
+        epoch,
+        sectionId,
+        voteCount,
+      }
+    })
+  }
 }
 
-const db = await SQLiteConnector.create(schema, ':memory:')
+const db = await SQLiteConnector.create(schema, DB_PATH ?? ':memory:')
 export default new CanonSynchronizer({
   db,
   provider,

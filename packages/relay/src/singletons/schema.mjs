@@ -9,10 +9,23 @@ const _schema = [
       ['graffiti', 'String'],
       ['contentHash', 'String'],
       ['graffitiHash', 'String'],
-      ['hash', 'String'],
+      ['id', 'String'],
       ['author', 'String'],
-      ['confirmed', 'Int']
+      ['confirmed', 'Int'],
+      {
+        name: 'voteCount',
+        type: 'Int',
+        default: 0,
+      }
     ],
+  },
+  {
+    name: 'Canon',
+    rows: [
+      ['epoch', 'Int', { unique: true }],
+      ['sectionId', 'String'],
+      ['voteCount', 'Int']
+    ]
   },
   {
     name: 'AccountTransaction',

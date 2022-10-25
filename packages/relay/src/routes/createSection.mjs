@@ -4,13 +4,15 @@ import TransactionManager from '../singletons/TransactionManager.mjs'
 import { CANON_ADDRESS } from '../config.mjs'
 import CanonABI from '@canon/contracts/abi/Canon.json' assert { type: 'json' }
 
-export default ({ app, db, synchronizer }) => {
-  app.post('/api/section', createSection)
-  app.get('/api/section', loadSections)
+/**
+ * Create a section
+ * Calculate the id by hashing the content+graffiti % 2^200 (to fit in a snark field).
+ * Mark confirmed: 0 until the blockchain confirms the tx (see CanonSychronizer)
+ **/
 
-  // take the content along with a zk proof signing the content
-  // and proving an epoch key
-  async function createSection(req, res) {
+export default ({ app, db, synchronizer }) => {
+  app.post('/api/section', async (req, res) => {
+
     const { content, graffiti, publicSignals, proof } = req.body
     const epochKeyProof = new EpochKeyProof(publicSignals, proof, synchronizer.prover)
     const valid = await epochKeyProof.verify()
@@ -46,34 +48,13 @@ export default ({ app, db, synchronizer }) => {
       content,
       graffiti,
       epoch: Number(BigInt(epoch)),
-      hash: BigInt(hash).toString(),
+      id: BigInt(modded).toString(),
       author: BigInt(epochKey).toString(),
       confirmed: 0,
-      contentHash,
-      graffitiHash,
+      contentHash: BigInt(contentHash).toString(),
+      graffitiHash: BigInt(graffitiHash).toString(),
     })
     res.json({ hash: txHash })
-  }
 
-  async function loadSections(req, res) {
-    const epoch = await synchronizer.readCurrentEpoch()
-    const canonicalSections = await db.findMany('Section', {
-      where: {
-        epoch: {
-          lt: epoch.number
-        },
-        status: 1,
-      }
-    })
-    const sections = await db.findMany('Section', {
-      where: {
-        epoch: epoch.number,
-        status: 1,
-      }
-    })
-    res.json({
-      canonicalSections,
-      items: sections,
-    })
-  }
+  })
 }
