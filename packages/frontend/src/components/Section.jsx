@@ -13,7 +13,7 @@ export default observer(({ id }) => {
   }
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <div>Author: {section.author}</div>
+      <div>Author: {`0x${BigInt(section.author).toString(16)}`}</div>
       <div style={{ display: 'flex', flex: 1, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
         <div>Votes: {section.voteCount}{section.winner ? ' (Current leader)' : null}</div>
         <Button onClick={() => userContext.voteSection(section.id)}>Vote</Button>
