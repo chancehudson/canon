@@ -38,6 +38,7 @@ export default observer(() => {
         {!userContext.hasSignedUp ?
           (<Button onClick={() => userContext.signup()}>Join</Button>) : <div>Remaining time in epoch: {remainingTime}</div>}
       </div>
+      {canonContext.canon.length === 0 ? <div style={{ marginTop: '5px', alignSelf: 'center'}}>This is epoch 0, vote for the entries below!</div> : null}
       {canonContext.canon.map(({ sectionId }) => (
         <CanonSection key={sectionId} id={sectionId} />
       ))}
