@@ -43,6 +43,8 @@ contract Canon {
   mapping (uint => mapping(uint => uint)) votesById;
   // epoch => id, votes
   mapping (uint => uint[2]) canon;
+  // epoch => epoch key => hasVoted
+  mapping (uint => mapping(uint => bool)) epochKeyVotes;
 
   constructor(Unirep _unirep) {
     unirep = _unirep;
@@ -104,6 +106,8 @@ contract Canon {
     require(epoch == currentEpoch, 'epoch');
     uint id = publicSignals[4];
     uint epochKey = publicSignals[0];
+    require(epochKeyVotes[epoch][epochKey] == false);
+    epochKeyVotes[epoch][epochKey] = true;
     uint voteCount = votesById[epoch][id] + 1;
     votesById[epoch][id] = voteCount;
     if (votesById[epoch][id] > canon[epoch][1]) {
