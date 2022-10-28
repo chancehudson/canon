@@ -1,4 +1,5 @@
 import React from 'react'
+import './canonsection.css'
 import { observer } from 'mobx-react-lite'
 import Canon from '../contexts/canon'
 import User from '../contexts/User'
@@ -11,15 +12,21 @@ export default observer(({ id }) => {
   if (!section) {
     return (<div>unable to find section</div>)
   }
+        //<div>{`0x${BigInt(section.author).toString(16)}`}</div>
   return (
-    <div style={{ marginTop: '2px', display: 'flex', flexDirection: 'row', border: '1px solid black' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', width: '180px' }}>
-        <div>Author: {`0x${BigInt(section.author).toString(16)}`}</div>
-        <div>Votes: {section.voteCount}</div>
-        <div>Graffiti: {section.graffiti}</div>
+    <div className="canon-section">
+      <div className="meta-text">
+        <div style={{ display: 'flex', justifyContent: 'flex-end'}}>
+
+        <img width="16px" src={require('../../public/info.svg')} />
+        <div style={{ flex: 1 }} />
+        <div style={{ marginRight: '4px' }}>{section.voteCount}</div>
+        <img width="16px" src={require('../../public/heart.svg')} />
+        </div>
+        <div>{section.graffiti}</div>
       </div>
-      <div style={{ height: '100%', width: '1px', background: 'black'}} />
-      <div style={{ marginLeft: '10px' }}>
+      <div className="divider" />
+      <div className="canon-text">
         <div>{section.content}</div>
       </div>
     </div>

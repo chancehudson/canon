@@ -16,7 +16,7 @@ export default observer(({ sectionIds, children }) => {
   return (
     <div className="selector-outer">
       <div className="vertical-button" onClick={prevSection}>
-        Prev
+        <img width="100%" src={require('../../public/chevron_left.svg')} />
       </div>
       <div style={{ width: '4px' }} />
       <div className="selector-item">
@@ -27,7 +27,7 @@ export default observer(({ sectionIds, children }) => {
       </div>
       <div style={{ width: '4px' }} />
       <div className="vertical-button" onClick={nextSection}>
-        Next
+        <img width="100%" src={require('../../public/chevron_right.svg')} />
       </div>
     </div>
   )

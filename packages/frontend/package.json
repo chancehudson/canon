@@ -10,8 +10,10 @@
     "build": "webpack"
   },
   "dependencies": {
+    "@cloudflare/kv-asset-handler": "^0.2.0",
     "@unirep/core": "^1.0.1",
     "ethers": "^5.7.2",
+    "file-loader": "^6.2.0",
     "mobx-react-lite": "^3.4.0"
   },
   "devDependencies": {
