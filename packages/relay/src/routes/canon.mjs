@@ -6,7 +6,7 @@ export default ({ app, db, synchronizer }) => {
       const canon = await db.findMany('Canon', {
         where: {
           epoch: {
-            gt: 0,
+            gte: 0,
             lt: currentEpoch,
           }
         }
