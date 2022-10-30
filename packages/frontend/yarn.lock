@@ -1262,10 +1262,10 @@ anondb@^0.0.10:
     sqlite "^4.0.19"
     sqlite3 "^5.0.2"
 
-anondb@^0.0.13:
-  version "0.0.13"
-  resolved "https://registry.yarnpkg.com/anondb/-/anondb-0.0.13.tgz#9e15827f6f69f14684660e2aadcf27c4e80b8338"
-  integrity sha512-z3S+oTWuu6PL6pxyGTUBwClZfH3YDrO8+5Q8EjKAqPcpLweA3Kr9eTVzqmzpCDI5sSn+gAtEHrXYRo+v4d+xwA==
+anondb@^0.0.16:
+  version "0.0.16"
+  resolved "https://registry.yarnpkg.com/anondb/-/anondb-0.0.16.tgz#057bcc5d58676f3cc0983f99656f03641df3367b"
+  integrity sha512-F5vu1HzXcEHARhIe6bJhaIss40aqz4Ht4PnQx/4T2r0ZRmne7YbzGLjMimgV+MtA4QHk9jhe4pM8MdUmt0zYag==
   dependencies:
     async-lock "^1.2.11"
     idb "^6.0.0"

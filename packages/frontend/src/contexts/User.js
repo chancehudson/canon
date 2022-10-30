@@ -2,7 +2,8 @@ import { createContext} from 'react'
 import { makeAutoObservable } from 'mobx'
 import { ZkIdentity, Strategy } from '@unirep/crypto'
 import { UserState, schema } from '@unirep/core'
-import { IndexedDBConnector } from 'anondb/web'
+import { IndexedDBConnector, MemoryConnector } from 'anondb/web'
+import { constructSchema } from 'anondb/types'
 import { ethers } from 'ethers'
 import { provider, UNIREP_ADDRESS, CANON_ADDRESS, SERVER } from '../config'
 import prover from './prover'
@@ -25,7 +26,8 @@ class User {
     if (!id) {
       localStorage.setItem('id', identity.serializeIdentity())
     }
-    const db = await IndexedDBConnector.create(schema, 1)
+
+    const db = new MemoryConnector(constructSchema(schema))
     const userState = new UserState({
       db,
       provider,
@@ -45,8 +47,13 @@ class User {
     for (;;) {
       const epoch = await this.userState.latestTransitionedEpoch()
       const hasSignedUp = await this.userState.hasSignedUp()
-      if (hasSignedUp && epoch != this.userState.calcCurrentEpoch()) {
-        await this.stateTransition()
+      try {
+        if (hasSignedUp && epoch != this.userState.calcCurrentEpoch()) {
+          await this.stateTransition()
+        }
+      } catch (err) {
+        await new Promise(r => setTimeout(r, 10000))
+        continue
       }
       const time = this.userState.calcEpochRemainingTime()
       await new Promise(r => setTimeout(r, time * 1000))

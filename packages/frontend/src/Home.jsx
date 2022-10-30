@@ -14,6 +14,7 @@ export default observer(() => {
   const [writing, setWriting] = React.useState('')
   const [graffiti, setGraffiti] = React.useState('')
   const [visibleSection, setVisibleSection] = React.useState(0)
+  const [highlightingSection, setHighlightingSection] = React.useState(false)
   const userContext = React.useContext(User)
   const canonContext = React.useContext(Canon)
   const [remainingTime, setRemainingTime] = React.useState(0)
@@ -44,14 +45,23 @@ export default observer(() => {
         -- End of canonical story. Vote on the next sections below. --
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <div>Section {Math.min(visibleSection + 1, canonContext.sections.length)}/{canonContext.sections.length}</div>
+        <div
+          style={{
+            animation: highlightingSection ? 'highlight 1 0.5s linear' : undefined,
+          }}
+        >Section {Math.min(visibleSection + 1, canonContext.sections.length)}/{canonContext.sections.length}</div>
         {!isWriting &&
             <Button style={{alignSelf: 'flex-start'}} onClick={() => setIsWriting(true)}>Write</Button>
         }
       </div>
       {
         !isWriting && (
-          <HSelector onChange={setVisibleSection} sectionIds={canonContext.sections.map(({ id }) => id)} />
+          <HSelector onChange={(s) => {
+            setVisibleSection(s)
+            if (highlightingSection) return
+            setHighlightingSection(true)
+            const timer = setTimeout(() => setHighlightingSection(false), 500)
+          }} sectionIds={canonContext.sections.map(({ id }) => id)} />
         )
       }
       {

@@ -16,3 +16,12 @@
   border: 1px solid gray;
   padding: 2px;
 }
+
+@keyframes highlight {
+  from {
+    background: yellow;
+  }
+  to {
+    background: rgba(0, 0, 0, 0);
+  }
+}
