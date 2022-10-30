@@ -5,6 +5,7 @@ import express from 'express'
 import { provider, PRIVATE_KEY } from './config.mjs'
 import TransactionManager from './singletons/TransactionManager.mjs'
 import synchronizer from './singletons/CanonSynchronizer.mjs'
+import HashchainManager from './singletons/HashchainManager.mjs'
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 
@@ -12,6 +13,8 @@ await synchronizer.start()
 
 TransactionManager.configure(PRIVATE_KEY, provider, synchronizer._db)
 await TransactionManager.start()
+
+HashchainManager.startDaemon()
 
 const app = express()
 const port = process.env.PORT ?? 8000

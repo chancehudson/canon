@@ -15,7 +15,7 @@ export default observer(({ id }) => {
         //<div>{`0x${BigInt(section.author).toString(16)}`}</div>
   return (
     <div className="canon-section">
-      <div className="meta-text">
+      <div className="meta-text-container">
         <div style={{ display: 'flex', justifyContent: 'flex-end'}}>
 
         <img width="16px" src={require('../../public/info.svg')} />
@@ -23,11 +23,11 @@ export default observer(({ id }) => {
         <div style={{ marginRight: '4px' }}>{section.voteCount}</div>
         <img width="16px" src={require('../../public/heart.svg')} />
         </div>
-        <div>{section.graffiti}</div>
+        <div className="meta-text">{section.graffiti}</div>
       </div>
       <div className="divider" />
-      <div className="canon-text">
-        <div>{section.content}</div>
+      <div className="canon-text-container">
+        <div className="canon-text">{section.content}</div>
       </div>
     </div>
   )

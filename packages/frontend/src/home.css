@@ -13,4 +13,6 @@
   color: gray;
   text-align: center;
   margin: 5px 0px;
+  border: 1px solid gray;
+  padding: 2px;
 }

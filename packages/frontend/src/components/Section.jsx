@@ -15,11 +15,15 @@ export default observer(({ id }) => {
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div>Author: {`0x${BigInt(section.author).toString(16)}`}</div>
       <div style={{ display: 'flex', flex: 1, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
-        <div>Votes: {section.voteCount}{section.winner ? ' (Current leader)' : null}</div>
+        <div style={{ display: 'flex' }}>
+          <div style={{ marginRight: '4px' }}>{section.voteCount}</div>
+          <img width="16px" src={require('../../public/heart.svg')} />
+          {section.winner && <div style={{ marginLeft: '4px' }}>(Current leader)</div>}
+        </div>
         <Button onClick={() => userContext.voteSection(section.id)}>Vote</Button>
       </div>
       <div>
-        <div>{section.content}</div>
+        <div style={{ wordBreak: 'break-all'}}>{section.content}</div>
         <div>{section.graffiti}</div>
       </div>
     </div>

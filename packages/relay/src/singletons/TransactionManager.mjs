@@ -133,8 +133,8 @@ export class TransactionManager {
             nonce,
             to,
             // gasPrice: 2 * 10 ** 9, // 2 gwei
-            gasPrice: 10000,
-            gasPrice: 33887934,
+            // gasPrice: 10000,
+            gasPrice: 299365979,
             ...args,
         })
         await this._db?.create('AccountTransaction', {

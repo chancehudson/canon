@@ -12,21 +12,31 @@
   top: 0px;
   bottom: 0px;
   width: 1px;
+  min-width: 1px;
   background: black;
 }
 
-.meta-text {
+.meta-text-container {
   color: rgba(70, 70, 70, 1);
   display: flex;
   flex-direction: column;
-  width: 10%;
-  max-width: 200px;
-  text-align: right;
+  width: 100px;
+  min-width: 100px;
+  /* width: 10%; */
+  /* max-width: 200px; */
+  /* text-align: right; */
   margin-right: 10px;
+}
+
+.meta-text {
   word-break: break-all;
 }
 
-.canon-text {
+.canon-text-container {
   margin-left: 10px;
   /* border-left: 1px solid black; */
+}
+
+.canon-text {
+  word-break: break-all;
 }
