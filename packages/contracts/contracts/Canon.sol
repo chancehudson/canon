@@ -48,10 +48,11 @@ contract Canon {
   mapping (uint => mapping(uint => uint)) votesById;
   // epoch => id, votes
   mapping (uint => uint[2]) canon;
+  // mapping of whether the author has claimed ownership/rep
+  // epoch => bool
+  mapping (uint => bool) claimedCanon;
   // epoch => epoch key => hasVoted
   mapping (uint => mapping(uint => bool)) epochKeyVotes;
-
-  uint epochNeedingRepDist = 0;
 
   constructor(Unirep _unirep) {
     unirep = _unirep;
@@ -67,14 +68,37 @@ contract Canon {
   }
 
   /**
-   * Prove control of an epoch key, and prove the graffiti pre-image.
+   * Prove control of a past epoch key and a current epoch key.
    * Claim authorship of some canon indexes
    **/
   function claimCanonOwnership(
-    uint[] memory publicSignals,
-    uint[8] memory proof
+    uint[] memory publicSignals1,
+    uint[8] memory proof1,
+    uint[] memory publicSignals2,
+    uint[8] memory proof2
   ) public {
-
+    // verify proof1, it should be in the current epoch
+    require(unirep.verifyEpochKeyProof(publicSignals1, proof1), 'badproof1');
+    uint currentEpochKey = publicSignals1[0];
+    uint epoch = publicSignals1[2];
+    uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals1[3]));
+    require(epoch == currentEpoch);
+    // verify proof 2, it should be in the past epoch we're trying to claim
+    require(unirep.verifyEpochKeyProof(publicSignals2, proof2), 'badproof2');
+    uint oldEpoch = publicSignals2[2];
+    require(oldEpoch < currentEpoch, 'newepoch');
+    uint[2] storage oldCanon = canon[oldEpoch];
+    Section storage section = sectionById[oldEpoch][oldCanon[0]];
+    require(section.author == publicSignals2[0], 'nonauthor');
+    require(claimedCanon[oldEpoch] == false, 'doubleclaim');
+    claimedCanon[oldEpoch] = true;
+    unirep.submitAttestation(
+      currentEpoch,
+      currentEpochKey,
+      1,
+      0,
+      0
+    );
   }
 
   /**
@@ -144,20 +168,12 @@ contract Canon {
       id,
       voteCount
     );
-    // attest to the voter
-    unirep.submitAttestation(
-      currentEpoch,
-      epochKey,
-      0,
-      1,
-      0
-    );
     // attest to the author
     unirep.submitAttestation(
       currentEpoch,
       sectionById[epoch][id].author,
-      1,
       0,
+      1,
       0
     );
   }
