@@ -37,8 +37,13 @@ contract Canon {
     uint indexed voteCount
   );
 
-  // epoch => epoch key => section
-  mapping (uint => mapping(uint => Section)) sectionByEpochKey;
+  /**
+   * Canon management
+   **/
+  // epoch => id => section
+  mapping (uint => mapping(uint => Section)) sectionById;
+  // epoch => epochkey => bool
+  mapping (uint => mapping(uint => bool)) epochKeyHasSubmitted;
   // epoch => id => voteCount
   mapping (uint => mapping(uint => uint)) votesById;
   // epoch => id, votes
@@ -46,10 +51,12 @@ contract Canon {
   // epoch => epoch key => hasVoted
   mapping (uint => mapping(uint => bool)) epochKeyVotes;
 
+  uint epochNeedingRepDist = 0;
+
   constructor(Unirep _unirep) {
     unirep = _unirep;
     // 4 hour epochs
-    unirep.attesterSignUp(60 * 60 * 4);
+    unirep.attesterSignUp(60 * 15);
     // unirep.attesterSignUp(60 * 3);
     admin = msg.sender;
   }
@@ -57,6 +64,17 @@ contract Canon {
   function signup(uint[] memory publicSignals, uint[8] memory proof) public {
     require(msg.sender == admin, 'sender');
     unirep.userSignUp(publicSignals, proof);
+  }
+
+  /**
+   * Prove control of an epoch key, and prove the graffiti pre-image.
+   * Claim authorship of some canon indexes
+   **/
+  function claimCanonOwnership(
+    uint[] memory publicSignals,
+    uint[8] memory proof
+  ) public {
+
   }
 
   /**
@@ -75,15 +93,16 @@ contract Canon {
     uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals[3]));
     require(epoch == currentEpoch);
     bytes32 data = keccak256(abi.encode(contentHash, graffitiHash, epochKey, epoch));
-    uint moddedHash = uint(data) % 2**200;
-    require(moddedHash == publicSignals[4], 'badsig');
-    require(sectionByEpochKey[epoch][epochKey].id == 0, 'double');
-    sectionByEpochKey[epoch][epochKey].id = moddedHash;
-    sectionByEpochKey[epoch][epochKey].author = epochKey;
-    sectionByEpochKey[epoch][epochKey].graffitiHash = graffitiHash;
-    sectionByEpochKey[epoch][epochKey].contentHash = contentHash;
-    sectionByEpochKey[epoch][epochKey].epoch = epoch;
-    sectionByEpochKey[epoch][epochKey].voteCount = 0;
+    uint id = uint(data) % 2**200;
+    require(id == publicSignals[4], 'badsig');
+    require(!epochKeyHasSubmitted[epoch][epochKey], 'double');
+    epochKeyHasSubmitted[epoch][epochKey] = true;
+    sectionById[epoch][id].id = id;
+    sectionById[epoch][id].author = epochKey;
+    sectionById[epoch][id].graffitiHash = graffitiHash;
+    sectionById[epoch][id].contentHash = contentHash;
+    sectionById[epoch][id].epoch = epoch;
+    sectionById[epoch][id].voteCount = 0;
     emit SectionSubmitted(
       epochKey,
       epoch,
@@ -124,6 +143,22 @@ contract Canon {
       epochKey,
       id,
       voteCount
+    );
+    // attest to the voter
+    unirep.submitAttestation(
+      currentEpoch,
+      epochKey,
+      0,
+      1,
+      0
+    );
+    // attest to the author
+    unirep.submitAttestation(
+      currentEpoch,
+      sectionById[epoch][id].author,
+      1,
+      0,
+      0
     );
   }
 }
