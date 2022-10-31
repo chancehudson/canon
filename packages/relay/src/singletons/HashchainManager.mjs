@@ -1,7 +1,6 @@
 import { ethers } from 'ethers'
 import TransactionManager from './TransactionManager.mjs'
 import synchronizer from './CanonSynchronizer.mjs'
-import { AGGREGATE_KEY_COUNT } from '@unirep/circuits'
 
 class HashchainManager {
   latestSyncEpoch = 0
@@ -40,10 +39,9 @@ class HashchainManager {
       }
       if (
         BigInt(processedHashchains.toString()) === BigInt(totalHashchains.toString()) &&
-        BigInt(owedKeys.toString()) < BigInt(AGGREGATE_KEY_COUNT) &&
+        BigInt(owedKeys.toString()) < BigInt(synchronizer.settings.aggregateKeyCount) &&
         synchronizer.calcCurrentEpoch() === x
       ) {
-        console.log('waiting in epoch', x)
         // wait until there are more epoch keys to process
         // or the current epoch ends
         return

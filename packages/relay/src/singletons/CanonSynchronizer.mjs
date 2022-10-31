@@ -2,7 +2,7 @@ import { Synchronizer } from '@unirep/core'
 import { ethers } from 'ethers'
 import { provider, UNIREP_ADDRESS, CANON_ADDRESS, PRIVATE_KEY, DB_PATH } from '../config.mjs'
 import { SQLiteConnector } from 'anondb/node.js'
-import { defaultProver } from '@unirep/circuits/provers/defaultProver.js'
+import prover from './prover.mjs'
 import schema from './schema.mjs'
 import CanonABI from '@canon/contracts/abi/Canon.json' assert { type: 'json' }
 
@@ -114,5 +114,5 @@ export default new CanonSynchronizer({
   provider,
   unirepAddress: UNIREP_ADDRESS,
   attesterId: CANON_ADDRESS,
-  prover: defaultProver,
+  prover,
 })
