@@ -27,7 +27,6 @@ app.use('*', (req, res, next) => {
 app.use(express.json())
 app.use('/build', express.static(path.join(__dirname, '../keys')))
 
-
 // import all non-index files from this folder
 const routeDir = path.join(__dirname, 'routes')
 const routes = await fs.promises.readdir(routeDir)

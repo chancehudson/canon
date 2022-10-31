@@ -15,6 +15,12 @@ contract Canon {
     uint voteCount;
   }
 
+  struct SignupRequest {
+    uint id;
+    uint[] publicSignals;
+    uint[8] proof;
+  }
+
   Unirep unirep;
   address admin;
 
@@ -37,6 +43,18 @@ contract Canon {
     uint indexed voteCount
   );
 
+  event SignupRequestSubmitted(
+    uint indexed epoch,
+    uint indexed id
+  );
+
+  event SignupRequestVote(
+    uint indexed epoch,
+    uint indexed id,
+    uint indexed epochKey,
+    bool inFavor
+  );
+
   /**
    * Canon management
    **/
@@ -54,11 +72,20 @@ contract Canon {
   // epoch => epoch key => hasVoted
   mapping (uint => mapping(uint => bool)) epochKeyVotes;
 
+  // epoch => id => forVoteCount, againstVoteCount
+  mapping (uint => mapping(uint => uint[2])) signupRequests;
+  // prevent double signup request
+  // epoch => state leaf
+  mapping (uint => mapping(uint => bool)) signupRequestLeaves;
+  mapping (uint => SignupRequest) signupData;
+  // epoch => epochKey => voteCount
+  mapping (uint => mapping(uint => uint)) signupVotes;
+
   constructor(Unirep _unirep) {
     unirep = _unirep;
     // 4 hour epochs
-    unirep.attesterSignUp(60 * 15);
-    // unirep.attesterSignUp(60 * 3);
+    // unirep.attesterSignUp(60 * 15);
+    unirep.attesterSignUp(60 * 60 * 24);
     admin = msg.sender;
   }
 
@@ -176,5 +203,73 @@ contract Canon {
       1,
       0
     );
+  }
+
+  /**
+   * Takes a signup proof and the hash of some data
+   **/
+  function signupRequest(
+    uint data,
+    uint[] memory publicSignals,
+    uint[8] memory proof
+  ) public {
+    require(unirep.signupVerifier().verifyProof(publicSignals, proof), 'badproof');
+    uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals[2]));
+    require(!signupRequestLeaves[currentEpoch][publicSignals[0]], 'double');
+    signupRequestLeaves[currentEpoch][publicSignals[0]] = true;
+    require(publicSignals[3] == currentEpoch + 1, 'wrongepoch');
+    bytes32 _data = keccak256(abi.encode(data, publicSignals, proof));
+    uint id = uint(_data) % 2**200;
+    SignupRequest memory request = SignupRequest({
+      id: id,
+      publicSignals: publicSignals,
+      proof: proof
+    });
+    signupData[id] = request;
+    emit SignupRequestSubmitted(
+      currentEpoch,
+      id
+    );
+  }
+
+  /**
+   * Take an epoch key proof with the data being the signup.
+   **/
+  function voteSignup(
+    uint[] memory publicSignals,
+    uint[8] memory proof
+  ) public {
+    require(unirep.verifyEpochKeyProof(publicSignals, proof), 'badproof');
+    uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals[3]));
+    uint epoch = publicSignals[2];
+    require(epoch == currentEpoch, 'epoch');
+    require(signupVotes[epoch][publicSignals[0]] == 0, 'double');
+    signupVotes[epoch][publicSignals[0]] = 1;
+    // if first byte is 0, voting aginst, if it's 1, voting for
+    uint data = publicSignals[4];
+    uint id = data & uint(0x00000000000000ffffffffffffffffffffffffffffffffffffffffffffffffff);
+    uint vote = data & uint(0xffffffffffff0000000000000000000000000000000000000000000000000000);
+    uint[2] storage request = signupRequests[currentEpoch][id];
+    if (vote == 0) {
+      // vote against
+      request[1]++;
+    } else {
+      // vote for
+      request[0]++;
+    }
+    emit SignupRequestVote(
+      currentEpoch,
+      id,
+      publicSignals[0],
+      vote != 0
+    );
+  }
+
+  function executeSignup(uint id) public {
+    uint currentEpoch = unirep.attesterCurrentEpoch(uint160(address(this)));
+    uint[2] storage request = signupRequests[currentEpoch][id];
+    require(request[0] > request[1], 'votefail');
+    SignupRequest storage data = signupData[id];
+    unirep.userSignUp(data.publicSignals, data.proof);
   }
 }
