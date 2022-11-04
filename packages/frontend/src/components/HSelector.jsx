@@ -30,7 +30,7 @@ export default observer(({ sectionIds, children, onChange }) => {
       <div style={{ width: '4px' }} />
       <div className="selector-item">
         {sectionIds.length ?
-          <Section id={sectionIds[visibleSection]} /> :
+          <CanonSection enableVote={true} id={sectionIds[visibleSection]} /> :
           <div>No sections to vote on. You should write one!</div>
         }
       </div>

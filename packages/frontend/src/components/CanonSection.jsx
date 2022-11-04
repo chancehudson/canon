@@ -3,12 +3,14 @@ import './canonsection.css'
 import { observer } from 'mobx-react-lite'
 import Canon from '../contexts/canon'
 import User from '../contexts/User'
+import Highlight from '../contexts/highlights'
 import Button from './Button'
 
-export default observer(({ id }) => {
+export default observer(({ id, draft, enableVote }) => {
   const canonContext = React.useContext(Canon)
   const userContext = React.useContext(User)
-  const section = canonContext.sectionsById[id]
+  const highlightContext = React.useContext(Highlight)
+  const section = canonContext.sectionsById[id] ?? draft
   if (!section) {
     return (<div>unable to find section</div>)
   }
@@ -16,11 +18,20 @@ export default observer(({ id }) => {
   return (
     <div className="canon-section">
       <div className="meta-text-container">
-        <div style={{ display: 'flex', justifyContent: 'flex-end'}}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end'}}>
 
-        <img width="16px" src={require('../../public/info.svg')} />
+        {
+          enableVote ?
+          <Button style={{ fontSize: '12px' }} onClick={() => {
+            if (userContext.hasSignedUp)
+              return userContext.voteSection(section.id)
+            else
+              highlightContext.join()
+          }}>Vote</Button> :
+          <img width="16px" src={require('../../public/info.svg')} />
+        }
         <div style={{ flex: 1 }} />
-        <div style={{ marginRight: '4px' }}>{section.voteCount}</div>
+        <div style={{ marginRight: '4px' }}>{section.voteCount ?? 0}</div>
         <img width="16px" src={require('../../public/heart.svg')} />
         </div>
         <div className="meta-text">{section.graffiti}</div>

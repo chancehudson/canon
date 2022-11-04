@@ -19,8 +19,8 @@ export default ({ style, children, loadingText, onClick }) => {
     }
   }
   return (
-    <div className="button-outer" style={{ ...(style || {} )}}>
-      <div className="button-inner" onClick={handleClick}>
+    <div className="button-outer">
+      <div className="button-inner" style={{ ...(style || {})}} onClick={handleClick}>
         {!loading && !error ? children : null}
         {loading ? (loadingText ?? 'Loading...') : null}
         {error ? error : null}

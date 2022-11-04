@@ -26,6 +26,7 @@
 }
 
 .meta-text {
+  margin-top: 16px;
   word-break: break-word;
 }
 
@@ -35,5 +36,5 @@
 }
 
 .canon-text {
-  word-break: break-all;
+  word-break: break-word;
 }
