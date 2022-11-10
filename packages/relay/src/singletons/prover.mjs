@@ -12,11 +12,10 @@ export default {
     inputs
   ) => {
     const circuitWasmPath = path.join(
-      __dirname,
       keyPath,
       `${circuitName}.wasm`
     )
-    const zkeyPath = path.join(__dirname, keyPath, `${circuitName}.zkey`)
+    const zkeyPath = path.join(keyPath, `${circuitName}.zkey`)
     const { proof, publicSignals } = await snarkjs.groth16.fullProve(
       inputs,
       circuitWasmPath,

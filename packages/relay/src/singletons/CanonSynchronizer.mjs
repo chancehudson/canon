@@ -9,56 +9,28 @@ import CanonABI from '@canon/contracts/abi/Canon.json' assert { type: 'json' }
 const canonContract = new ethers.Contract(CANON_ADDRESS, CanonABI, provider)
 
 class CanonSynchronizer extends Synchronizer {
-  async loadNewEvents(fromBlock, toBlock) {
-    const p1 = super.loadNewEvents(fromBlock, toBlock)
-    const p2 = canonContract.queryFilter(
-        this.canonFilter,
-        fromBlock,
-        toBlock
-    )
-    return (await Promise.all([p1, p2])).flat()
-  }
 
-  get canonFilter() {
-    const [SectionSubmitted] = canonContract.filters.SectionSubmitted().topics
-    const [SectionVote] = canonContract.filters.SectionVote().topics
-    const [CanonFire] = canonContract.filters.CanonFire().topics
+  get contracts() {
     return {
-        address: CANON_ADDRESS,
-        topics: [
-          [
-            SectionSubmitted,
-            SectionVote,
-            CanonFire
-          ],
-        ],
+      ...super.contracts,
+      [canonContract.address]: {
+        contract: canonContract,
+        eventNames: [
+          'SectionSubmitted',
+          'SectionVote',
+          'CanonFire',
+        ]
+      }
     }
   }
-
-  get topicHandlers() {
-    const [SectionSubmitted] = canonContract.filters.SectionSubmitted().topics
-    const [SectionVote] = canonContract.filters.SectionVote().topics
-    const [CanonFire] = canonContract.filters.CanonFire().topics
-    return {
-      [SectionSubmitted]: this.sectionSubmitted.bind(this),
-      [SectionVote]: this.sectionVote.bind(this),
-      [CanonFire]: this.canonFire.bind(this),
-      ...super.topicHandlers,
-    }
-  }
-
 /**
  * event handlers
  **/
 
-  async sectionSubmitted(event, db) {
+  async handleSectionSubmitted({ event, db, decodedData }) {
     const epochKey = BigInt(event.topics[1]).toString()
     const epoch = BigInt(event.topics[2])
     const contentHash = BigInt(event.topics[3]).toString()
-    const decodedData = canonContract.interface.decodeEventLog(
-      'SectionSubmitted',
-      event.data
-    )
     const graffitiHash = BigInt(decodedData.graffitiHash).toString()
     db.update('Section', {
       where: {
@@ -73,7 +45,7 @@ class CanonSynchronizer extends Synchronizer {
     })
   }
 
-  async sectionVote(event, db) {
+  async handleSectionVote({ event, db }) {
     const epochKey = BigInt(event.topics[1]).toString()
     const sectionId = BigInt(event.topics[2]).toString()
     const voteCount = Number(BigInt(event.topics[3]))
@@ -87,7 +59,7 @@ class CanonSynchronizer extends Synchronizer {
     })
   }
 
-  async canonFire(event, db) {
+  async handleCanonFire({ event, db }) {
     const epoch = Number(BigInt(event.topics[1]))
     const sectionId = BigInt(event.topics[2]).toString()
     const voteCount = Number(BigInt(event.topics[3]))

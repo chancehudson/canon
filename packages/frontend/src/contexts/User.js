@@ -1,6 +1,6 @@
 import { createContext} from 'react'
 import { makeAutoObservable } from 'mobx'
-import { ZkIdentity, Strategy } from '@unirep/crypto'
+import { ZkIdentity, Strategy } from '@unirep/utils'
 import { UserState, schema } from '@unirep/core'
 import { IndexedDBConnector, MemoryConnector } from 'anondb/web'
 import { constructSchema } from 'anondb/types'

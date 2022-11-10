@@ -83,9 +83,9 @@ contract Canon {
 
   constructor(Unirep _unirep) {
     unirep = _unirep;
-    // 4 hour epochs
-    // unirep.attesterSignUp(60 * 15);
-    unirep.attesterSignUp(60 * 60 * 24);
+    // 15 minute epochs
+    unirep.attesterSignUp(60 * 15);
+    // unirep.attesterSignUp(60 * 60 * 24);
     admin = msg.sender;
   }
 
@@ -105,13 +105,13 @@ contract Canon {
     uint[8] memory proof2
   ) public {
     // verify proof1, it should be in the current epoch
-    require(unirep.verifyEpochKeyProof(publicSignals1, proof1), 'badproof1');
+    unirep.verifyEpochKeyProof(publicSignals1, proof1);
     uint currentEpochKey = publicSignals1[0];
     uint epoch = publicSignals1[2];
     uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals1[3]));
     require(epoch == currentEpoch);
     // verify proof 2, it should be in the past epoch we're trying to claim
-    require(unirep.verifyEpochKeyProof(publicSignals2, proof2), 'badproof2');
+    unirep.verifyEpochKeyProof(publicSignals2, proof2);
     uint oldEpoch = publicSignals2[2];
     require(oldEpoch < currentEpoch, 'newepoch');
     uint[2] storage oldCanon = canon[oldEpoch];
@@ -138,7 +138,7 @@ contract Canon {
     uint[] memory publicSignals,
     uint[8] memory proof
   ) public {
-    require(unirep.verifyEpochKeyProof(publicSignals, proof), 'badproof');
+    unirep.verifyEpochKeyProof(publicSignals, proof);
     uint epochKey = publicSignals[0];
     uint epoch = publicSignals[2];
     uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals[3]));
@@ -170,7 +170,7 @@ contract Canon {
     uint[] memory publicSignals,
     uint[8] memory proof
   ) public {
-    require(unirep.verifyEpochKeyProof(publicSignals, proof), 'badproof');
+    unirep.verifyEpochKeyProof(publicSignals, proof);
     uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals[3]));
     uint epoch = publicSignals[2];
     require(epoch == currentEpoch, 'epoch');
@@ -213,7 +213,7 @@ contract Canon {
     uint[] memory publicSignals,
     uint[8] memory proof
   ) public {
-    require(unirep.signupVerifier().verifyProof(publicSignals, proof), 'badproof');
+    unirep.signupVerifier().verifyProof(publicSignals, proof);
     uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals[2]));
     require(!signupRequestLeaves[currentEpoch][publicSignals[0]], 'double');
     signupRequestLeaves[currentEpoch][publicSignals[0]] = true;
@@ -239,7 +239,7 @@ contract Canon {
     uint[] memory publicSignals,
     uint[8] memory proof
   ) public {
-    require(unirep.verifyEpochKeyProof(publicSignals, proof), 'badproof');
+    unirep.verifyEpochKeyProof(publicSignals, proof);
     uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals[3]));
     uint epoch = publicSignals[2];
     require(epoch == currentEpoch, 'epoch');
