@@ -15,8 +15,10 @@ class Canon {
   }
 
   async load() {
-    this.loadCanon()
-    this.loadSections()
+    await Promise.all([
+      this.loadCanon(),
+      this.loadSections()
+    ])
     setInterval(() => {
       this.loadCanon()
       this.loadSections()

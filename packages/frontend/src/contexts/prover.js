@@ -1,5 +1,4 @@
 import { SERVER } from '../config'
-import * as snarkjs from 'snarkjs'
 import { Circuit } from '@unirep/circuits'
 import { SnarkPublicSignals, SnarkProof } from '@unirep/utils'
 
@@ -9,6 +8,7 @@ export default {
         publicSignals,
         proof
     ) => {
+        const snarkjs = await import(/* webpackPrefetch: true */ 'snarkjs')
         const url = new URL(`/build/${circuitName}.vkey.json`, SERVER)
         const vkey = await fetch(url.toString()).then((r) => r.json())
         return snarkjs.groth16.verify(vkey, publicSignals, proof)
@@ -17,6 +17,7 @@ export default {
         circuitName,
         inputs
     ) => {
+        const snarkjs = await import(/* webpackPrefetch: true */ 'snarkjs')
         const wasmUrl = new URL(`/build/${circuitName}.wasm`, SERVER)
         const wasm = await fetch(wasmUrl.toString()).then((r) =>
             r.arrayBuffer()
