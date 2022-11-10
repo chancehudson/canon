@@ -20,6 +20,10 @@ export default observer(() => {
   const highlightContext = React.useContext(Highlight)
   const [remainingTime, setRemainingTime] = React.useState(0)
   const updateTimer = () => {
+    if (!userContext.userState) {
+      setRemainingTime('Loading...')
+      return
+    }
     const time = userContext.userState.calcEpochRemainingTime()
     setRemainingTime(time)
   }
