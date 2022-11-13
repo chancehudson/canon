@@ -5,6 +5,7 @@ import Canon from '../contexts/canon'
 import User from '../contexts/User'
 import Highlight from '../contexts/highlights'
 import Button from './Button'
+import Tooltip from './Tooltip'
 
 export default observer(({ id, draft, enableVote }) => {
   const canonContext = React.useContext(Canon)
@@ -28,7 +29,10 @@ export default observer(({ id, draft, enableVote }) => {
             else
               highlightContext.join()
           }}>Vote</Button> :
-          <img width="16px" src={require('../../public/info.svg')} />
+          <Tooltip
+            text={section.isEditorial ? 'This is a note from the operator, not part of the canon.' : `This was authored in epoch ${section.epoch} by ${section.author}.`}
+            imgSrc={section.isEditorial ? null : require('../../public/canon.svg')}
+          />
         }
         <div style={{ flex: 1 }} />
         <div style={{ marginRight: '4px' }}>{section.voteCount ?? 0}</div>
