@@ -16,6 +16,8 @@ class HashchainManager {
   }
 
   async sync() {
+    // Make sure we're synced up
+    await synchronizer.waitForSync()
     const currentEpoch = synchronizer.calcCurrentEpoch()
     for (let x = this.latestSyncEpoch; x <= currentEpoch; x++) {
       // check the owed keys
@@ -83,13 +85,16 @@ class HashchainManager {
       // it already got processed somehow
       return
     }
-    const { publicSignals, proof } = await synchronizer.genAggregateEpochKeysProof({
+    const aggProof = await synchronizer.genAggregateEpochKeysProof({
       epochKeys: hashchain.epochKeys,
       hashchainIndex: hashchain.index,
       epoch,
       newBalances: hashchain.epochKeyBalances,
     })
-
+    if (!await aggProof.verify()) {
+      throw new Error('Invalid aggregate proof generated')
+    }
+    const { publicSignals, proot } = aggProof
     const calldata = synchronizer.unirepContract.interface.encodeFunctionData(
       'processHashchain',
       [publicSignals, proof]
