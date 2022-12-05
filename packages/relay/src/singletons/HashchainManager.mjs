@@ -94,7 +94,7 @@ class HashchainManager {
     if (!await aggProof.verify()) {
       throw new Error('Invalid aggregate proof generated')
     }
-    const { publicSignals, proot } = aggProof
+    const { publicSignals, proof } = aggProof
     const calldata = synchronizer.unirepContract.interface.encodeFunctionData(
       'processHashchain',
       [publicSignals, proof]

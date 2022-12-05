@@ -25,3 +25,39 @@
     background: rgba(0, 0, 0, 0);
   }
 }
+
+@keyframes fuck {
+  0% {
+    color: white;
+  }
+  10% {
+    color: red;
+  }
+  20% {
+    color: green;
+  }
+  30% {
+    color: purple;
+  }
+  40% {
+    color: yellow;
+  }
+  50% {
+    color: blue;
+  }
+  60% {
+    color: gray;
+  }
+  70% {
+    color: pink;
+  }
+  80% {
+    color: aqua;
+  }
+  90% {
+    color: black;
+  }
+  100% {
+    color: white;
+  }
+}
