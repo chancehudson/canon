@@ -18,6 +18,8 @@ class HashchainManager {
   }
 
   async sync() {
+    // Make sure we're synced up
+    await synchronizer.waitForSync()
     const currentEpoch = synchronizer.calcCurrentEpoch()
     for (let x = this.latestSyncEpoch; x < currentEpoch; x++) {
       // check the owed keys
