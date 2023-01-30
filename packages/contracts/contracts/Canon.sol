@@ -84,8 +84,8 @@ contract Canon {
   constructor(Unirep _unirep) {
     unirep = _unirep;
     // 15 minute epochs
-    unirep.attesterSignUp(60 * 15);
-    // unirep.attesterSignUp(60 * 60 * 24);
+    // unirep.attesterSignUp(60 * 3);
+    unirep.attesterSignUp(60 * 60 * 4);
     admin = msg.sender;
   }
 
@@ -139,24 +139,23 @@ contract Canon {
     uint[8] memory proof
   ) public {
     unirep.verifyEpochKeyProof(publicSignals, proof);
-    uint epochKey = publicSignals[0];
-    uint epoch = publicSignals[2];
-    uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals[3]));
-    require(epoch == currentEpoch);
-    bytes32 data = keccak256(abi.encode(contentHash, graffitiHash, epochKey, epoch));
+    Unirep.EpochKeySignals memory signals = unirep.decodeEpochKeySignals(publicSignals);
+    uint currentEpoch = unirep.attesterCurrentEpoch(uint160(signals.attesterId));
+    require(signals.epoch == currentEpoch, 'epoch');
+    bytes32 data = keccak256(abi.encode(contentHash, graffitiHash, signals.epochKey, signals.epoch));
     uint id = uint(data) % 2**200;
-    require(id == publicSignals[4], 'badsig');
-    require(!epochKeyHasSubmitted[epoch][epochKey], 'double');
-    epochKeyHasSubmitted[epoch][epochKey] = true;
-    sectionById[epoch][id].id = id;
-    sectionById[epoch][id].author = epochKey;
-    sectionById[epoch][id].graffitiHash = graffitiHash;
-    sectionById[epoch][id].contentHash = contentHash;
-    sectionById[epoch][id].epoch = epoch;
-    sectionById[epoch][id].voteCount = 0;
+    require(id == signals.data, 'badsig');
+    require(!epochKeyHasSubmitted[signals.epoch][signals.epochKey], 'double');
+    epochKeyHasSubmitted[signals.epoch][signals.epochKey] = true;
+    sectionById[signals.epoch][id].id = id;
+    sectionById[signals.epoch][id].author = signals.epochKey;
+    sectionById[signals.epoch][id].graffitiHash = graffitiHash;
+    sectionById[signals.epoch][id].contentHash = contentHash;
+    sectionById[signals.epoch][id].epoch = signals.epoch;
+    sectionById[signals.epoch][id].voteCount = 0;
     emit SectionSubmitted(
-      epochKey,
-      epoch,
+      signals.epochKey,
+      signals.epoch,
       contentHash,
       graffitiHash
     );
@@ -171,34 +170,32 @@ contract Canon {
     uint[8] memory proof
   ) public {
     unirep.verifyEpochKeyProof(publicSignals, proof);
-    uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals[3]));
-    uint epoch = publicSignals[2];
-    require(epoch == currentEpoch, 'epoch');
-    uint id = publicSignals[4];
-    uint epochKey = publicSignals[0];
-    require(epochKeyVotes[epoch][epochKey] == false);
-    epochKeyVotes[epoch][epochKey] = true;
-    uint voteCount = votesById[epoch][id] + 1;
-    votesById[epoch][id] = voteCount;
-    if (votesById[epoch][id] > canon[epoch][1]) {
+    Unirep.EpochKeySignals memory signals = unirep.decodeEpochKeySignals(publicSignals);
+    uint currentEpoch = unirep.attesterCurrentEpoch(uint160(signals.attesterId));
+    require(signals.epoch == currentEpoch, 'epoch');
+    require(epochKeyVotes[signals.epoch][signals.epochKey] == false);
+    epochKeyVotes[signals.epoch][signals.epochKey] = true;
+    uint voteCount = votesById[signals.epoch][signals.data] + 1;
+    votesById[signals.epoch][signals.data] = voteCount;
+    if (votesById[signals.epoch][signals.data] > canon[signals.epoch][1]) {
       // update the current canonical entry
-      canon[epoch][0] = id;
-      canon[epoch][1] = voteCount;
+      canon[signals.epoch][0] = signals.data;
+      canon[signals.epoch][1] = voteCount;
       emit CanonFire(
-        epoch,
-        id,
+        signals.epoch,
+        signals.data,
         voteCount
       );
     }
     emit SectionVote(
-      epochKey,
-      id,
+      signals.epochKey,
+      signals.data,
       voteCount
     );
     // attest to the author
     unirep.submitAttestation(
       currentEpoch,
-      sectionById[epoch][id].author,
+      sectionById[signals.epoch][signals.data].author,
       0,
       1,
       0

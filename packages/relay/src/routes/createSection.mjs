@@ -1,4 +1,4 @@
-import { EpochKeyProof } from '@unirep/contracts'
+import { EpochKeyProof } from '@unirep/circuits'
 import { ethers } from 'ethers'
 import TransactionManager from '../singletons/TransactionManager.mjs'
 import { CANON_ADDRESS } from '../config.mjs'

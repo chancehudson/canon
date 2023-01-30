@@ -14,7 +14,7 @@ module.exports = {
       ]
     },
     arb: {
-      url: 'http://localhost:8547',
+      url: 'https://arbitrum.goerli.unirep.io',
       accounts: [
         '0x0f70e777f814334daa4456ac32b9a1fdca75ae07f70c2e6cef92679bad06c88b'
       ]

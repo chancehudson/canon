@@ -47,9 +47,17 @@ class User {
     for (;;) {
       const epoch = await this.userState.latestTransitionedEpoch()
       const hasSignedUp = await this.userState.hasSignedUp()
+      const isSealed = await this.userState.isEpochSealed(epoch)
       try {
-        if (hasSignedUp && epoch != this.userState.calcCurrentEpoch()) {
+        if (
+          hasSignedUp &&
+          epoch != this.userState.calcCurrentEpoch() &&
+          isSealed
+        ) {
           await this.stateTransition()
+        } else if (!isSealed && epoch != this.userState.calcCurrentEpoch()) {
+          await new Promise(r => setTimeout(r, 2000))
+          continue
         }
       } catch (err) {
         await new Promise(r => setTimeout(r, 10000))
@@ -131,15 +139,15 @@ class User {
   }
 
   async stateTransition() {
-    const signupProof = await this.userState.genUserStateTransitionProof()
+    const transitionProof = await this.userState.genUserStateTransitionProof()
     const data = await fetch(`${SERVER}/api/transition`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json'
       },
       body: JSON.stringify({
-        publicSignals: signupProof.publicSignals,
-        proof: signupProof.proof,
+        publicSignals: transitionProof.publicSignals,
+        proof: transitionProof.proof,
       })
     }).then(r => r.json())
     await provider.waitForTransaction(data.hash)

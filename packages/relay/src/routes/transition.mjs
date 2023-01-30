@@ -1,4 +1,4 @@
-import { UserStateTransitionProof } from '@unirep/contracts'
+import { UserStateTransitionProof } from '@unirep/circuits'
 import { ethers } from 'ethers'
 import TransactionManager from '../singletons/TransactionManager.mjs'
 
