@@ -1,14 +1,18 @@
 import { ethers } from 'ethers'
-import { Circuit, BuildOrderedTree } from '@unirep/circuits'
-import { stringifyBigInts } from '@unirep/utils'
+import pkg_circuits from '@unirep/circuits';
+import pkg_utils from '@unirep/utils'
 import TransactionManager from './TransactionManager.mjs'
 import synchronizer from './CanonSynchronizer.mjs'
+
+const { Circuit, BuildOrderedTree } = pkg_circuits;
+const { stringifyBigInts } = pkg_utils;
 
 class HashchainManager {
   latestSyncEpoch = 0
   async startDaemon() {
     // first sync up all the historical epochs
     // then start watching
+    console.log('starting hashchain manager daemon')
     await this.sync()
     for (;;) {
       // try to make a
@@ -21,11 +25,12 @@ class HashchainManager {
     // Make sure we're synced up
     await synchronizer.waitForSync()
     const currentEpoch = synchronizer.calcCurrentEpoch()
+    console.log('current epoch: ', currentEpoch);
     for (let x = this.latestSyncEpoch; x < currentEpoch; x++) {
       // check the owed keys
       const isSealed = await synchronizer.unirepContract.attesterEpochSealed(synchronizer.attesterId, x)
       if (!isSealed) {
-        console.log('executing epoch', x)
+        console.log('executing epoch seal', x)
         // otherwise we need to make an ordered tree
         await this.processEpochKeys(x)
         this.latestSyncEpoch = x
