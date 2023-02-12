@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  canon-synchronizer:
+    build: 
+      dockerfile: ./images/synchronizer/Dockerfile
+      context: .
+    ports:
+      - 8000:8000
+    working_dir: /canon/packages/relay
+    command:
+      yarn start
+    restart: always
+  canon-frontend:
+    build: 
+      dockerfile: ./images/site/Dockerfile
+      context: .
+    ports: 
+      - 3000:3000
+    working_dir: /canon/packages/frontend
+    command:
+      yarn start
+    restart: always

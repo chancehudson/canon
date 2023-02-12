@@ -29,6 +29,7 @@ class HashchainManager {
     for (let x = this.latestSyncEpoch; x < currentEpoch; x++) {
       // check the owed keys
       const isSealed = await synchronizer.unirepContract.attesterEpochSealed(synchronizer.attesterId, x)
+      console.log("is sealed?: ", isSealed);
       if (!isSealed) {
         console.log('executing epoch seal', x)
         // otherwise we need to make an ordered tree

@@ -15,7 +15,6 @@ RUN git clone https://github.com/iden3/rapidsnark.git && \
     npx task buildProver
 
 # |=================================[ canon build stage ]===============================================|
-
 # Build stage for unirep source (custom branch checkout)
 FROM node:16-buster-slim as canon-builder
 
@@ -47,4 +46,4 @@ COPY --from=rapidsnark-builder /rapidsnark/build/prover /usr/local/bin/rapidsnar
 
 WORKDIR /canon/packages/relay
 
-CMD ["yarn", "start"]
+EXPOSE 8000

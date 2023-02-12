@@ -9,6 +9,8 @@ module.exports = (env) => ({
     entry: ['./src/index.jsx'],
     mode: 'development',
     devServer: {
+        host: '0.0.0.0',
+        compress: false,
         port: 3000,
         historyApiFallback: true,
     },
