@@ -31,11 +31,16 @@ RUN curl https://pub-0a2a0097caa84eb18d3e5c165665bffb.r2.dev/unirep-beta-1.tar.g
 # Copy canon from local source
 COPY . /canon
 
+WORKDIR /canon
+
 # Link compatible version of unirep to canon dependencies
-RUN cd canon && yarn install && cd packages && \
+RUN yarn install && cd packages && \
     rm -rf contracts/node_modules/@unirep relay/node_modules/@unirep frontend && \
     cp -r /unirep ./contracts/node_modules/@unirep && \
     cp -r /unirep ./relay/node_modules/@unirep
+
+# Load keys
+RUN cd packages/relay && cp -r node_modules/@unirep/circuits/zksnarkBuild/. ./keys
 
 # |=================================[ final stage ]===============================================|
 FROM node:16-buster-slim as daemon

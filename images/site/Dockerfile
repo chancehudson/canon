@@ -19,8 +19,7 @@ COPY . /canon
 RUN cd canon && yarn && cd packages && \
     rm -rf frontend/node_modules/@unirep contracts/node_modules/@unirep relay && \
     cp -r /unirep ./frontend/node_modules/@unirep && \
-    cp -r /unirep ./contracts/node_modules/@unirep && \
-    cd frontend && yarn build
+    cp -r /unirep ./contracts/node_modules/@unirep
 
 # Expose port
 EXPOSE 3000
