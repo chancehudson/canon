@@ -10,17 +10,6 @@ const keyPath = path.join(__dirname, '../../keys')
 
 export default {
 
-  // /**
-  //  * Write input.json to /tmp/
-  //  * @notice fed into rapidnsnark
-  //  * @param inputs - json object of properly named key value pairs mapping to circuit inputs
-  //  */
-  // writeInputs: (
-  //   inputs
-  // ) => {
-
-  // }
-
   /**
    * Generate the witness for a given input for a circuit and save to fs in /tmp/
    * 
@@ -66,24 +55,6 @@ export default {
         publicSignals: require(publicSignalsPath)
       }
     });
-  },
-
-  genProofAndPublicSignals: async (
-    circuitName,
-    inputs
-  ) => {
-    const circuitWasmPath = path.join(
-      keyPath,
-      `${circuitName}.wasm`
-    )
-    const zkeyPath = path.join(keyPath, `${circuitName}.zkey`)
-    const { proof, publicSignals } = await snarkjs.groth16.fullProve(
-      inputs,
-      circuitWasmPath,
-      zkeyPath
-    )
-
-    return { proof, publicSignals }
   },
 
   verifyProof: async (
