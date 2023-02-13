@@ -6,6 +6,7 @@ import { exec } from 'child_process'
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 const keyPath = path.join(__dirname, '../../keys')
+const prefix = 'canon-tmp-' // prefix for tmp files
 
 
 export default {
@@ -35,26 +36,28 @@ export default {
     circuitName,
     inputs
   ) => {
+    // generate a new temporary file
+    const { folder } = await fs.mkdtemp('canon-tmp-');
     // write inputs.json to /tmp/inputs.json
-    fs.writeFileSync('/tmp/inputs.json', JSON.stringify(inputs));
+    await fs.writeFile('/tmp/inputs.json', JSON.stringify(inputs));
     // write witness to /tmp/{CIRCUIT_NAME}.wtns
     await this.genWitnessFs(circuitName, inputs);
     // define path to proving artifact inputs / outputs
     const zkeyPath = path.join(keyPath, `${circuitName}.zkey`)
-    const witnessPath = path.join("tmp", `${circuitName}.witness`)
-    const proofPath = path.join("tmp", `${circuitName}-proof.json`)
-    const publicSignalsPath = path.join("tmp", `${circuitName}-signals.json`)
+    const witnessPath = path.join(folder, `${circuitName}.witness`)
+    const proofPath = path.join(folder, `${circuitName}-proof.json`)
+    const publicSignalsPath = path.join(folder, `${circuitName}-signals.json`)
     // spawn child_process to build proof and public signals using rapidsnark
-    exec(`rapidsnark ${zkeyPath} ${witnessPath} ${proofPath} ${publicSignalsPath}`, (err) => {
-      if (err) {
-        console.error(err);
-        return;
-      }
+    const { err } = await exec(`rapidsnark ${zkeyPath} ${witnessPath} ${proofPath} ${publicSignalsPath}`);
+    if (err) {
+      console.error(err);
+      return;
+    } else {
       return {
         proof: require(proofPath),
         publicSignals: require(publicSignalsPath)
       }
-    });
+    }
   },
 
   verifyProof: async (
