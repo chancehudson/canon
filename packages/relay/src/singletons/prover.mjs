@@ -2,62 +2,66 @@ import path from 'path'
 import * as snarkjs from 'snarkjs'
 import fs from 'fs'
 import url from 'url'
-import { exec } from 'child_process'
+import { exec } from 'child_process';
+import { createRequire } from 'module';
 
+const require = createRequire(import.meta.url);
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 const keyPath = path.join(__dirname, '../../keys')
 const prefix = 'canon-tmp-' // prefix for tmp files
 
+/**
+ * Executes a shell command and return it as a Promise.
+ * @param cmd {string}
+ * @return {Promise<string>}
+ */
+function cmd(cmd) {
+  let child = exec(cmd);
+  return new Promise((resolve, reject) => {
+    child.addListener("error", reject);
+    child.addListener("close", resolve);
+    child.stderr.on('data', (data) => {
+      reject(data)
+    });
+    child.stdout.on('data', (data) => {
+      resolve(data)
+    });
+  });
+}
 
 export default {
-
-  /**
-   * Generate the witness for a given input for a circuit and save to fs in /tmp/
-   * 
-   * @param {string} circuitName - name of zk circuit being used
-   * @param {Object} inputs - json object of properly named key value pairs mapping to circuit inputs
-   */
-  genWitnessFs: async (
-    circuitName,
-    inputs
-  ) => {
-    // define path to circuit wasm artifact
-    const circuitWasmPath = path.join(
-      keyPath,
-      `${circuitName}.wasm`
-    )
-    // define path to export witness file to
-    const witnessPath = path.join('tmp', `${circuitName}.wtns`)
-    // generate witness and write to /tmp/{CIRCUIT_NAME}.wtns
-    await snarkjs.groth16.fullProvingKeyGen(circuitWasmPath, witnessPath, inputs)
-  },
 
   genProofAndPublicSignals: async (
     circuitName,
     inputs
   ) => {
     // generate a new temporary file
-    const { folder } = await fs.mkdtemp('canon-tmp-');
-    // write inputs.json to /tmp/inputs.json
-    await fs.writeFile('/tmp/inputs.json', JSON.stringify(inputs));
-    // write witness to /tmp/{CIRCUIT_NAME}.wtns
-    await this.genWitnessFs(circuitName, inputs);
-    // define path to proving artifact inputs / outputs
-    const zkeyPath = path.join(keyPath, `${circuitName}.zkey`)
-    const witnessPath = path.join(folder, `${circuitName}.witness`)
-    const proofPath = path.join(folder, `${circuitName}-proof.json`)
-    const publicSignalsPath = path.join(folder, `${circuitName}-signals.json`)
+    const folder = await new Promise((resolve, reject) => {
+      fs.mkdtemp('canon-tmp-', (err, folder) => {
+        return err ? reject(err) : resolve(folder)
+      })
+    });
+    console.log('f', folder);
+    // define key filepaths
+    const circuitWasmPath = path.join(
+      keyPath,
+      `${circuitName}.wasm`
+    );
+    // define temporary proving artifact filepaths
+    const witnessPath = path.join(folder, `${circuitName}.witness`);
+    const zkeyPath = path.join(keyPath, `${circuitName}.zkey`);
+    const proofPath = path.join(folder, `${circuitName}-proof.json`);
+    const publicSignalsPath = path.join(folder, `${circuitName}-signals.json`);
+    // calculate witness and write to fs
+    await snarkjs.wtns.calculate(inputs, circuitWasmPath, witnessPath);
     // spawn child_process to build proof and public signals using rapidsnark
-    const { err } = await exec(`rapidsnark ${zkeyPath} ${witnessPath} ${proofPath} ${publicSignalsPath}`);
-    if (err) {
-      console.error(err);
-      return;
-    } else {
-      return {
-        proof: require(proofPath),
-        publicSignals: require(publicSignalsPath)
-      }
+    try {
+      await cmd(`rapidsnark ${zkeyPath} ${witnessPath} ${proofPath} ${publicSignalsPath}`);
+      console.log('q', q);
+    } catch (e) {
+      throw new Error(e)
     }
+    return { proof: require(proofPath), publicSignals: require(publicSignalsPath) }
   },
 
   verifyProof: async (
