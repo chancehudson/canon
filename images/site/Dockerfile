@@ -21,5 +21,5 @@ RUN cd canon && yarn && cd packages && \
     cp -r /unirep ./frontend/node_modules/@unirep && \
     cp -r /unirep ./contracts/node_modules/@unirep
 
-# Expose port
+# Expose port 3000 on container to access dev server front end locally
 EXPOSE 3000

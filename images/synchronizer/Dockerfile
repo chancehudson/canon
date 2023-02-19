@@ -30,7 +30,6 @@ RUN curl https://pub-0a2a0097caa84eb18d3e5c165665bffb.r2.dev/unirep-beta-1.tar.g
 
 # Copy canon from local source
 COPY . /canon
-
 WORKDIR /canon
 
 # Link compatible version of unirep to canon dependencies
@@ -46,9 +45,11 @@ RUN cd packages/relay && cp -r node_modules/@unirep/circuits/zksnarkBuild/. ./ke
 FROM node:16-buster-slim as daemon
 RUN apt-get update && apt-get install curl build-essential libgmp-dev libsodium-dev nasm -y
 
+# Copy canon from canon-builder stage
 COPY --from=canon-builder /canon /canon
+
+# Copy rapidsnark from rapidsnark-builder stage
 COPY --from=rapidsnark-builder /rapidsnark/build/prover /usr/local/bin/rapidsnark
 
-WORKDIR /canon/packages/relay
-
+# Expose port 8000 on container for synchronizer ipc
 EXPOSE 8000
