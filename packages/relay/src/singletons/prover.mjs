@@ -32,7 +32,7 @@ export default {
     circuitName,
     inputs
   ) => {
-    // generate a new temporary file
+    // generate a new temporary folder for proving artifacts
     const folder = await new Promise((resolve, reject) => {
       fs.mkdtemp('/tmp/canon-', (err, folder) => {
         err ? reject(err) : resolve(folder)
