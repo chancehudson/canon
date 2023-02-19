@@ -10,7 +10,6 @@ import HashchainManager from './singletons/HashchainManager.mjs'
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 
 await synchronizer.start()
-
 TransactionManager.configure(PRIVATE_KEY, provider, synchronizer._db)
 await TransactionManager.start()
 
