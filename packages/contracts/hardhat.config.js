@@ -15,6 +15,7 @@ module.exports = {
     },
     arb: {
       url: 'https://arbitrum.goerli.unirep.io',
+      chainId: 421613,
       accounts: [
         '0x0f70e777f814334daa4456ac32b9a1fdca75ae07f70c2e6cef92679bad06c88b'
       ]

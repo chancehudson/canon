@@ -3,9 +3,7 @@ import * as snarkjs from 'snarkjs'
 import fs from 'fs'
 import url from 'url'
 import { exec } from 'child_process';
-import { createRequire } from 'module';
 
-const require = createRequire(import.meta.url);
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 const keyPath = path.join(__dirname, '../../keys')
 const prefix = 'canon-tmp-' // prefix for tmp files
@@ -37,8 +35,8 @@ export default {
   ) => {
     // generate a new temporary file
     const folder = await new Promise((resolve, reject) => {
-      fs.mkdtemp('canon-tmp-', (err, folder) => {
-        return err ? reject(err) : resolve(folder)
+      fs.mkdtemp('/tmp/canon-', (err, folder) => {
+        err ? reject(err) : resolve(folder)
       })
     });
     console.log('f', folder);
@@ -54,14 +52,31 @@ export default {
     const publicSignalsPath = path.join(folder, `${circuitName}-signals.json`);
     // calculate witness and write to fs
     await snarkjs.wtns.calculate(inputs, circuitWasmPath, witnessPath);
-    // spawn child_process to build proof and public signals using rapidsnark
     try {
+      // spawn child_process to build proof and public signals using rapidsnark
       await cmd(`rapidsnark ${zkeyPath} ${witnessPath} ${proofPath} ${publicSignalsPath}`);
-      console.log('q', q);
+      // load proof and public signals from fs
+      let loadJson = async (path) => {
+        return new Promise((resolve, reject) => {
+          fs.readFile(path, 'utf-8', (err, data) => {
+            err ? reject(err) : resolve(JSON.parse(data))
+          })
+        })
+
+      }
+      let res = {
+        proof: await loadJson(proofPath),
+        publicSignals: await loadJson(publicSignalsPath)
+      }
+      // delete temporary artifacts from fs
+      // await cmd(`rm -rf ${folder}`);
+      console.log('proof: ', res.proof);
+      console.log('signals: ', res.publicSignals);
+      // return `buildOrderedTree` proof and public signals
+      return res;
     } catch (e) {
       throw new Error(e)
     }
-    return { proof: require(proofPath), publicSignals: require(publicSignalsPath) }
   },
 
   verifyProof: async (
