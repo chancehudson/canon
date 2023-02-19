@@ -12,31 +12,29 @@ class HashchainManager {
   async startDaemon() {
     // first sync up all the historical epochs
     // then start watching
-    console.log('starting hashchain manager daemon')
-    await this.sync()
-    for (;;) {
+    await this.sync();
+    for (; ;) {
       // try to make a
-      await new Promise(r => setTimeout(r, 10000))
-      await this.sync()
+      await new Promise(r => setTimeout(r, 10000));
+      await this.sync();
     }
   }
 
   async sync() {
     // Make sure we're synced up
-    await synchronizer.waitForSync()
-    const currentEpoch = synchronizer.calcCurrentEpoch()
-    console.log('current epoch: ', currentEpoch);
+    await synchronizer.waitForSync();
+    const currentEpoch = synchronizer.calcCurrentEpoch();
+    console.log(`Heartbeat (${new Date()}): Epoch #${currentEpoch}`);
     for (let x = this.latestSyncEpoch; x < currentEpoch; x++) {
       // check the owed keys
-      const isSealed = await synchronizer.unirepContract.attesterEpochSealed(synchronizer.attesterId, x)
-      console.log("is sealed?: ", isSealed);
+      const isSealed = await synchronizer.unirepContract.attesterEpochSealed(synchronizer.attesterId, x);
       if (!isSealed) {
-        console.log('executing epoch seal', x)
+        console.log(`Sealing epoch ${x}...`);
         // otherwise we need to make an ordered tree
-        await this.processEpochKeys(x)
-        this.latestSyncEpoch = x
+        await this.processEpochKeys(x);
+        this.latestSyncEpoch = x;
       } else {
-        this.latestSyncEpoch = x
+        this.latestSyncEpoch = x;
       }
     }
   }

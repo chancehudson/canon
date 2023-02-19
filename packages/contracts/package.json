@@ -8,8 +8,8 @@
   "scripts": {
     "build": "hardhat compile && yarn abi",
     "abi": "node scripts/abi",
-    "deploy": "hardhat run scripts/deploy.js",
-    "deploy-arbitrum": "hardhat run scripts/deployLive.js --network arb"
+    "deploy": "hardhat run scripts/deploy.mjs",
+    "deploy-arb": "hardhat run scripts/deployLive.mjs --network arb"
   },
   "dependencies": {},
   "devDependencies": {

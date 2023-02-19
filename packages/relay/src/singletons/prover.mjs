@@ -6,12 +6,11 @@ import { exec } from 'child_process';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 const keyPath = path.join(__dirname, '../../keys')
-const prefix = 'canon-tmp-' // prefix for tmp files
 
 /**
  * Executes a shell command and return it as a Promise.
- * @param cmd {string}
- * @return {Promise<string>}
+ * @param cmd {string} - the bash command to run in the child process 
+ * @return {Promise<string>} - output or result of the command
  */
 function cmd(cmd) {
   let child = exec(cmd);
@@ -39,13 +38,8 @@ export default {
         err ? reject(err) : resolve(folder)
       })
     });
-    console.log('f', folder);
-    // define key filepaths
-    const circuitWasmPath = path.join(
-      keyPath,
-      `${circuitName}.wasm`
-    );
-    // define temporary proving artifact filepaths
+    // define proving artifact filepaths
+    const circuitWasmPath = path.join(keyPath, `${circuitName}.wasm`);
     const witnessPath = path.join(folder, `${circuitName}.witness`);
     const zkeyPath = path.join(keyPath, `${circuitName}.zkey`);
     const proofPath = path.join(folder, `${circuitName}-proof.json`);
@@ -69,9 +63,7 @@ export default {
         publicSignals: await loadJson(publicSignalsPath)
       }
       // delete temporary artifacts from fs
-      // await cmd(`rm -rf ${folder}`);
-      console.log('proof: ', res.proof);
-      console.log('signals: ', res.publicSignals);
+      await cmd(`rm -rf ${folder}`);
       // return `buildOrderedTree` proof and public signals
       return res;
     } catch (e) {
