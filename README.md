@@ -22,7 +22,7 @@ If you don't want to run the frontend for some reason, you can use the docker co
   > git clone https://github.com/vimwitch/canon.git
   > cd canon
   > docker compose build synchronizer
-  > docker compose run 
+  > docker compose run synchronizer
 ```
 ## Using a different deployment
 This repository is linked to a deployed instance of Unirep and Canon. 
