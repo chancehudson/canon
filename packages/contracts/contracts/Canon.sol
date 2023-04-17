@@ -84,8 +84,8 @@ contract Canon {
   constructor(Unirep _unirep) {
     unirep = _unirep;
     // 15 minute epochs
-    unirep.attesterSignUp(60 * 3);
-    // unirep.attesterSignUp(60 * 60 * 4);
+    // unirep.attesterSignUp(60 * 3);
+    unirep.attesterSignUp(60 * 60 * 8);
     admin = msg.sender;
   }
 
