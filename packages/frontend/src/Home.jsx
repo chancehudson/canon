@@ -24,7 +24,7 @@ export default observer(() => {
       setRemainingTime('Loading...')
       return
     }
-    const time = userContext.userState.calcEpochRemainingTime()
+    const time = userContext.userState?.sync.calcEpochRemainingTime()
     setRemainingTime(time)
   }
   React.useEffect(() => {

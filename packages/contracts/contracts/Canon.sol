@@ -84,8 +84,8 @@ contract Canon {
   constructor(Unirep _unirep) {
     unirep = _unirep;
     // 15 minute epochs
-    // unirep.attesterSignUp(60 * 3);
-    unirep.attesterSignUp(60 * 60 * 4);
+    unirep.attesterSignUp(60 * 3);
+    // unirep.attesterSignUp(60 * 60 * 4);
     admin = msg.sender;
   }
 
@@ -108,23 +108,22 @@ contract Canon {
     unirep.verifyEpochKeyProof(publicSignals1, proof1);
     uint currentEpochKey = publicSignals1[0];
     uint epoch = publicSignals1[2];
-    uint currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals1[3]));
+    uint48 currentEpoch = unirep.attesterCurrentEpoch(uint160(publicSignals1[3]));
     require(epoch == currentEpoch);
     // verify proof 2, it should be in the past epoch we're trying to claim
     unirep.verifyEpochKeyProof(publicSignals2, proof2);
     uint oldEpoch = publicSignals2[2];
-    require(oldEpoch < currentEpoch, 'newepoch');
+    require(oldEpoch < uint(currentEpoch), 'newepoch');
     uint[2] storage oldCanon = canon[oldEpoch];
     Section storage section = sectionById[oldEpoch][oldCanon[0]];
     require(section.author == publicSignals2[0], 'nonauthor');
     require(claimedCanon[oldEpoch] == false, 'doubleclaim');
     claimedCanon[oldEpoch] = true;
-    unirep.submitAttestation(
-      currentEpoch,
+    unirep.attest(
       currentEpochKey,
-      1,
+      currentEpoch,
       0,
-      0
+      1
     );
   }
 
@@ -171,8 +170,8 @@ contract Canon {
   ) public {
     unirep.verifyEpochKeyProof(publicSignals, proof);
     Unirep.EpochKeySignals memory signals = unirep.decodeEpochKeySignals(publicSignals);
-    uint currentEpoch = unirep.attesterCurrentEpoch(uint160(signals.attesterId));
-    require(signals.epoch == currentEpoch, 'epoch');
+    uint48 currentEpoch = unirep.attesterCurrentEpoch(uint160(signals.attesterId));
+    require(signals.epoch == uint(currentEpoch), 'epoch');
     require(epochKeyVotes[signals.epoch][signals.epochKey] == false);
     epochKeyVotes[signals.epoch][signals.epochKey] = true;
     uint voteCount = votesById[signals.epoch][signals.data] + 1;
@@ -193,12 +192,11 @@ contract Canon {
       voteCount
     );
     // attest to the author
-    unirep.submitAttestation(
-      currentEpoch,
+    unirep.attest(
       sectionById[signals.epoch][signals.data].author,
-      0,
+      currentEpoch,
       1,
-      0
+      1
     );
   }
 

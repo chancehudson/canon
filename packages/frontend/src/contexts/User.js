@@ -1,6 +1,6 @@
 import { createContext} from 'react'
 import { makeAutoObservable } from 'mobx'
-import { ZkIdentity, Strategy } from '@unirep/utils'
+import { Identity } from '@semaphore-protocol/identity'
 import { UserState, schema } from '@unirep/core'
 import { IndexedDBConnector, MemoryConnector } from 'anondb/web'
 import { constructSchema } from 'anondb/types'
@@ -21,10 +21,10 @@ class User {
   }
 
   async load() {
-    const id = localStorage.getItem('id')
-    const identity = new ZkIdentity(id ? Strategy.SERIALIZED : Strategy.RANDOM, id)
+    const id = localStorage.getItem('id') ?? undefined
+    const identity = new Identity(id)
     if (!id) {
-      localStorage.setItem('id', identity.serializeIdentity())
+      localStorage.setItem('id', identity.toString())
     }
 
     const db = new MemoryConnector(constructSchema(schema))
@@ -47,15 +47,13 @@ class User {
     for (;;) {
       const epoch = await this.userState.latestTransitionedEpoch()
       const hasSignedUp = await this.userState.hasSignedUp()
-      const isSealed = await this.userState.isEpochSealed(epoch)
       try {
         if (
           hasSignedUp &&
-          epoch != this.userState.calcCurrentEpoch() &&
-          isSealed
+          epoch != this.userState.sync.calcCurrentEpoch()
         ) {
           await this.stateTransition()
-        } else if (!isSealed && epoch != this.userState.calcCurrentEpoch()) {
+        } else if (epoch != this.userState.sync.calcCurrentEpoch()) {
           await new Promise(r => setTimeout(r, 2000))
           continue
         }
@@ -63,7 +61,7 @@ class User {
         await new Promise(r => setTimeout(r, 10000))
         continue
       }
-      const time = this.userState.calcEpochRemainingTime()
+      const time = this.userState.sync.calcEpochRemainingTime()
       await new Promise(r => setTimeout(r, time * 1000))
     }
   }
@@ -88,8 +86,8 @@ class User {
   async submitSection(content, graffiti = '') {
     const contentHash = ethers.utils.solidityKeccak256(['string'], [content])
     const graffitiHash = ethers.utils.solidityKeccak256(['string'], [graffiti])
-    const epoch = this.userState.calcCurrentEpoch()
-    const epochKeys = await this.userState.getEpochKeys(epoch)
+    const epoch = this.userState.sync.calcCurrentEpoch()
+    const epochKeys = this.userState.getEpochKeys(epoch)
     const epochKey = epochKeys[0]
     const hash = ethers.utils.solidityKeccak256(['uint', 'uint', 'uint', 'uint'], [contentHash, graffitiHash, epochKey, epoch])
     const mod = ethers.BigNumber.from(2).pow(200)
@@ -117,7 +115,7 @@ class User {
   }
 
   async voteSection(id) {
-    const epoch = this.userState.calcCurrentEpoch()
+    const epoch = this.userState.sync.calcCurrentEpoch()
     const epochKeyProof = await this.userState.genEpochKeyProof({
       data: id.toString(),
       epoch,

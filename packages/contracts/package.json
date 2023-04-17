@@ -10,11 +10,12 @@
     "abi": "node scripts/abi",
     "deploy": "hardhat run scripts/deploy.mjs"
   },
-  "dependencies": {},
+  "dependencies": {
+  },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.2.0",
     "@openzeppelin/contracts": "^4.7.3",
-    "@unirep/contracts": "2.0.0-alpha-2",
+    "@unirep/contracts": "2.0.0-beta-2",
     "hardhat": "^2.12.0"
   }
 }
